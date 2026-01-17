@@ -1,39 +1,27 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# AdHub
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+`adhub` is a Flutter package that simplifies multi-network ad integration with a unified API for **Google AdMob**, **AppLovin MAX**, **IronSource**, and **Unity Ads**.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+[![pub.dev version](https://img.shields.io/pub/v/adhub.svg)](https://pub.dev/packages/adhub)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/RajNarola29/adhub/blob/main/LICENSE)
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+---
 
-## Features
+## ✨ Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- ✅ **Unified API** - Single interface for all ad networks
+- 📱 **Banner** - Google, AppLovin
+- 🎬 **Interstitial** - Google, AppLovin, IronSource, Unity
+- 💰 **Rewarded** - Google
+- 🖼️ **Native** - Google
+- 🔄 **AdLoader** overlay widget
+- 📊 **Remote JSON config**
+- 🔔 **OneSignal** + **In-App Review**
 
-## Getting started
+---
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+## Installation
 
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
-```dart
-const like = 'sample';
-```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```yaml
+dependencies:
+  adhub: ^0.0.1
