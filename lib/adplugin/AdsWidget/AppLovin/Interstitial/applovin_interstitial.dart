@@ -16,10 +16,9 @@ class ApplovinInterstitial {
     AppLovinMAX.setInterstitialListener(
       InterstitialListener(
         onAdLoadedCallback: (ad) async {
-          bool isReady =
-              (await AppLovinMAX.isInterstitialReady(
-                mainJson.data!['adIds']['applovin']['fullScreen'],
-              ))!;
+          bool isReady = (await AppLovinMAX.isInterstitialReady(
+            mainJson.data!['adIds']['applovin']['fullScreen'],
+          ))!;
           if (isReady) {
             onLoaded();
             AppLovinMAX.showInterstitial(

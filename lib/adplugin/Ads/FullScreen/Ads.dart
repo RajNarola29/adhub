@@ -285,8 +285,7 @@ class AdsRN {
     MainJson mainJson = context.read<MainJson>();
     AdLoaderProvider loaderProvider = context.read<AdLoaderProvider>();
     loaderProvider.isAdLoading = true;
-    int index =
-        actionName != null ? (routeIndex[actionName] ?? 0) : currentAdIndex;
+    int index = (routeIndex[actionName] ?? 0);
     if (!mainJson.isAdsOn) {
       loaderProvider.isAdLoading = false;
 
@@ -501,10 +500,7 @@ class AdsRN {
     String? route = ModalRoute.of(context)?.settings.name;
     AdLoaderProvider loaderProvider = context.read<AdLoaderProvider>();
     loaderProvider.isAdLoading = true;
-    int index =
-        actionName != null
-            ? (routeIndex['$route/$actionName'] ?? 0)
-            : currentAdIndex;
+    int index = (routeIndex['$route/$actionName'] ?? 0);
     if (!mainJson.isAdsOn) {
       loaderProvider.isAdLoading = false;
 

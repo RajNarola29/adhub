@@ -18,34 +18,33 @@ class GoogleRewardedInterstitial {
   }) {
     MainJson mainJson = context.read<MainJson>();
     RewardedInterstitialAd.load(
-      adUnitId:
-          !mainJson.isTestOn
-              ? '${mainJson.data!['adIds']['google']['rewardInter']}'
-              : Platform.isIOS
-              ? 'ca-app-pub-3940256099942544/5354046379'
-              : 'ca-app-pub-3940256099942544/6978759866',
+      adUnitId: !mainJson.isTestOn
+          ? '${mainJson.data!['adIds']['google']['rewardInter']}'
+          : Platform.isIOS
+          ? 'ca-app-pub-3940256099942544/5354046379'
+          : 'ca-app-pub-3940256099942544/6978759866',
       request: const AdRequest(),
       rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           _rewardeInterstitialdAd = ad;
-          _rewardeInterstitialdAd!
-              .fullScreenContentCallback = FullScreenContentCallback(
-            onAdShowedFullScreenContent: (ad) {},
-            onAdImpression: (ad) {},
-            onAdFailedToShowFullScreenContent: (ad, err) {
-              onFailed();
-              ad.dispose();
-            },
-            onAdDismissedFullScreenContent: (ad) {
-              if (mainJson.data![mainJson
-                  .version]['globalConfig']['rewardOverRide']) {
-                onComplete();
-              }
-              context.read<AdLoaderProvider>().isAdLoading = false;
-              ad.dispose();
-            },
-            onAdClicked: (ad) {},
-          );
+          _rewardeInterstitialdAd!.fullScreenContentCallback =
+              FullScreenContentCallback(
+                onAdShowedFullScreenContent: (ad) {},
+                onAdImpression: (ad) {},
+                onAdFailedToShowFullScreenContent: (ad, err) {
+                  onFailed();
+                  ad.dispose();
+                },
+                onAdDismissedFullScreenContent: (ad) {
+                  if (mainJson.data![mainJson
+                      .version]['globalConfig']['rewardOverRide']) {
+                    onComplete();
+                  }
+                  context.read<AdLoaderProvider>().isAdLoading = false;
+                  ad.dispose();
+                },
+                onAdClicked: (ad) {},
+              );
           onLoaded();
           _rewardeInterstitialdAd!.show(
             onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {

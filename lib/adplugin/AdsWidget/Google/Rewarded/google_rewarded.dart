@@ -19,12 +19,11 @@ class GoogleRewarded {
     MainJson mainJson = context.read<MainJson>();
 
     RewardedAd.load(
-      adUnitId:
-          !mainJson.isTestOn
-              ? '${mainJson.data!['adIds']['google']['reward']}'
-              : Platform.isIOS
-              ? 'ca-app-pub-3940256099942544/1712485313'
-              : 'ca-app-pub-3940256099942544/5224354917',
+      adUnitId: !mainJson.isTestOn
+          ? '${mainJson.data!['adIds']['google']['reward']}'
+          : Platform.isIOS
+          ? 'ca-app-pub-3940256099942544/1712485313'
+          : 'ca-app-pub-3940256099942544/5224354917',
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {

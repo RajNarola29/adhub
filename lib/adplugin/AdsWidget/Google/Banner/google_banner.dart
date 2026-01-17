@@ -21,12 +21,11 @@ class GoogleBanner extends HookWidget {
 
     loadAd() {
       bannerAd.value = BannerAd(
-        adUnitId:
-            !mainJson.isTestOn
-                ? '${mainJson.data!['adIds']['google']['banner']}'
-                : Platform.isIOS
-                ? 'ca-app-pub-3940256099942544/2934735716'
-                : 'ca-app-pub-3940256099942544/6300978111',
+        adUnitId: !mainJson.isTestOn
+            ? '${mainJson.data!['adIds']['google']['banner']}'
+            : Platform.isIOS
+            ? 'ca-app-pub-3940256099942544/2934735716'
+            : 'ca-app-pub-3940256099942544/6300978111',
         request: const AdRequest(),
         size: AdSize.banner,
         listener: BannerAdListener(
@@ -66,10 +65,10 @@ class GoogleBanner extends HookWidget {
         : isLoading.value
         ? const SizedBox(height: 0, width: 0)
         : Container(
-          alignment: Alignment.center,
-          width: bannerAd.value!.size.width.toDouble(),
-          height: bannerAd.value!.size.height.toDouble(),
-          child: bannerWidget.value,
-        );
+            alignment: Alignment.center,
+            width: bannerAd.value!.size.width.toDouble(),
+            height: bannerAd.value!.size.height.toDouble(),
+            child: bannerWidget.value,
+          );
   }
 }
