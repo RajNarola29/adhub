@@ -164,7 +164,7 @@ class Adhub extends HookWidget {
               });
             }
           }
-        } on DioException catch (e) {
+        } on DioException {
           Future.microtask(() {
             AlertEngine.showCloseApp(context);
           });
