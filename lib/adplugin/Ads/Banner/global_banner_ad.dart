@@ -8,10 +8,10 @@ import 'package:provider/provider.dart';
 import '../../AdsWidget/Google/Banner/google_banner.dart';
 import '../../MainJson/main_json.dart';
 
-class GlobalBannerRN extends HookWidget {
+class GlobalBannerAd extends HookWidget {
   final BuildContext parentContext;
 
-  const GlobalBannerRN({required this.parentContext, super.key});
+  const GlobalBannerAd({required this.parentContext, super.key});
 
   @override
   Widget build(BuildContext context) {

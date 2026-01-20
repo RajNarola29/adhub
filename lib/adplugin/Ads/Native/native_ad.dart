@@ -8,10 +8,10 @@ import 'package:provider/provider.dart';
 import '../../AdsWidget/Google/Native/google_native.dart';
 import '../../MainJson/main_json.dart';
 
-class NativeRN extends HookWidget {
+class NativeAd extends HookWidget {
   final BuildContext parentContext;
 
-  const NativeRN({required this.parentContext, super.key});
+  const NativeAd({required this.parentContext, super.key});
 
   @override
   Widget build(BuildContext context) {

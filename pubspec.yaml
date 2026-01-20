@@ -1,6 +1,6 @@
 name: adhub
 description: "A Flutter package that simplifies ad integration with a unified API for banner, interstitial, and rewarded ads."
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/RajNarola29/adhub.git
 
 environment:
