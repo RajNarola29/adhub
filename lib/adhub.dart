@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:dio/dio.dart';
@@ -156,7 +157,9 @@ class Adhub extends HookWidget {
 
                     if (mainJson.data?[version]['isUserConsent']) {
                     } else {
-                      await AppTrackingTransparency.requestTrackingAuthorization();
+                      if (Platform.isIOS) {
+                        await AppTrackingTransparency.requestTrackingAuthorization();
+                      }
                     }
                     onComplete(context, mainJson.data!);
                   },
