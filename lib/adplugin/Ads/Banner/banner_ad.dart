@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
+import '../../AdsWidget/AppLovin/Banner/applovin_banner.dart';
 import '../../AdsWidget/Google/Banner/google_banner.dart';
 import '../../MainJson/main_json.dart';
 
@@ -46,6 +47,9 @@ class BannerAd extends HookWidget {
       )?.settings.name]['banner']) {
         case 0:
           bannerWidget.value = const GoogleBanner();
+          break;
+        case 1:
+          bannerWidget.value = const ApplovinBanner();
           break;
         default:
           bannerWidget.value = const SizedBox(height: 0, width: 0);

@@ -6,54 +6,44 @@ import 'package:provider/provider.dart';
 
 import '../../AdLoader/ad_loader_provider.dart';
 import '../../AdsWidget/AppLovin/Interstitial/applovin_interstitial.dart';
+import '../../AdsWidget/AppLovin/Rewarded/applovin_rewarded.dart';
 import '../../AdsWidget/Google/Interstitial/google_interstitial.dart';
 import '../../AdsWidget/Google/Rewarded Interstitial/google_rewarded_interstitial.dart';
 import '../../AdsWidget/Google/Rewarded/google_rewarded.dart';
 import '../../MainJson/main_json.dart';
 
-class AdsRN {
-  static final AdsRN _singleton = AdsRN._internal();
+// Ad-type index constants (from remote JSON):
+// 0 = Google Interstitial       | 1 = Google Rewarded
+// 2 = Google Rewarded Inter     | 3 = AppLovin Interstitial
+// 4 = AppLovin Rewarded
 
-  factory AdsRN() {
-    return _singleton;
-  }
+class Ads {
+  static final Ads _singleton = Ads._internal();
 
-  AdsRN._internal();
+  factory Ads() => _singleton;
+
+  Ads._internal();
 
   Map routeIndex = {};
   int currentAdIndex = 0;
   int failCounter = 0;
-
   Timer? timer;
 
-  indexIncrement(String? route, int arrayLength) {
+  // ── Index / loop helpers ───────────────────────────────────────────────────
+
+  void indexIncrement(String? key, int maxIndex) {
     failCounter = 0;
-    if (route != null) {
-      if (routeIndex[route] == null) {
-        if ((arrayLength + 1) == 1) {
-          routeIndex[route] = 0;
-        } else {
-          routeIndex[route] = 1;
-        }
-      } else {
-        if (routeIndex[route] != arrayLength &&
-            routeIndex[route] < arrayLength) {
-          routeIndex[route]++;
-        } else {
-          routeIndex[route] = 0;
-        }
-      }
+    if (key != null) {
+      routeIndex[key] = (routeIndex[key] == null)
+          ? (maxIndex == 0 ? 0 : 1)
+          : (routeIndex[key] < maxIndex ? routeIndex[key] + 1 : 0);
     } else {
-      if (currentAdIndex < arrayLength && currentAdIndex != arrayLength) {
-        currentAdIndex++;
-      } else {
-        currentAdIndex = 0;
-      }
+      currentAdIndex = currentAdIndex < maxIndex ? currentAdIndex + 1 : 0;
     }
   }
 
-  bool loopBreaker(int retry) {
-    if (failCounter < retry) {
+  bool loopBreaker(int maxRetry) {
+    if (failCounter < maxRetry) {
       failCounter++;
       return false;
     }
@@ -61,1217 +51,321 @@ class AdsRN {
     return true;
   }
 
-  showFullScreen({
-    required BuildContext context,
-    required Function() onComplete,
-  }) async {
-    MainJson mainJson = context.read<MainJson>();
-    AdLoaderProvider loaderProvider = context.read<AdLoaderProvider>();
-    loaderProvider.isAdLoading = true;
-    String? route = ModalRoute.of(context)?.settings.name;
-    int index = route != null ? (routeIndex[route] ?? 0) : currentAdIndex;
+  // ── Core ad dispatcher ────────────────────────────────────────────────────
 
+  static const _adNames = {
+    0: 'Google Interstitial',
+    1: 'Google Rewarded',
+    2: 'Google Rewarded Inter',
+    3: 'AppLovin Interstitial',
+    4: 'AppLovin Rewarded',
+  };
+
+  void _dispatchAd({
+    required int adTypeIndex,
+    required BuildContext context,
+    required VoidCallback onLoaded,
+    required VoidCallback onComplete,
+    required VoidCallback onFailed,
+  }) {
+    final name = _adNames[adTypeIndex] ?? 'Unknown($adTypeIndex)';
+    Logger().d('[$name] → called');
+
+    switch (adTypeIndex) {
+      case 0:
+        GoogleInterstitial().loadAd(
+          context: context,
+          onLoaded: () {
+            Logger().d('[$name] → loaded');
+            onLoaded();
+          },
+          onComplete: () {
+            Logger().d('[$name] → complete');
+            onComplete();
+          },
+          onFailed: () {
+            Logger().d('[$name] → failed');
+            onFailed();
+          },
+        );
+      case 1:
+        GoogleRewarded().loadAd(
+          context: context,
+          onLoaded: () {
+            Logger().d('[$name] → loaded');
+            onLoaded();
+          },
+          onComplete: () {
+            Logger().d('[$name] → complete');
+            onComplete();
+          },
+          onFailed: () {
+            Logger().d('[$name] → failed');
+            onFailed();
+          },
+        );
+      case 2:
+        GoogleRewardedInterstitial().loadAd(
+          context: context,
+          onLoaded: () {
+            Logger().d('[$name] → loaded');
+            onLoaded();
+          },
+          onComplete: () {
+            Logger().d('[$name] → complete');
+            onComplete();
+          },
+          onFailed: () {
+            Logger().d('[$name] → failed');
+            onFailed();
+          },
+        );
+      case 3:
+        ApplovinInterstitial().loadAd(
+          context: context,
+          onLoaded: () {
+            Logger().d('[$name] → loaded');
+            onLoaded();
+          },
+          onComplete: () {
+            Logger().d('[$name] → complete');
+            onComplete();
+          },
+          onFailed: () {
+            Logger().d('[$name] → failed');
+            onFailed();
+          },
+        );
+      case 4:
+        ApplovinRewarded().loadAd(
+          context: context,
+          onLoaded: () {
+            Logger().d('[$name] → loaded');
+            onLoaded();
+          },
+          onComplete: () {
+            Logger().d('[$name] → complete');
+            onComplete();
+          },
+          onFailed: () {
+            Logger().d('[$name] → failed');
+            onFailed();
+          },
+        );
+      default:
+        Logger().d('[Ad index $adTypeIndex] → unknown, skipping');
+        onComplete();
+    }
+  }
+
+  // ── Unified show flow ─────────────────────────────────────────────────────
+  // All three show* methods resolve their JSON config and delegate here.
+
+  void _resolveAndShow({
+    required BuildContext context,
+    required String?
+    key, // routeIndex key (route, actionName, or "route/action")
+    required List localClick,
+    required Map? localFail,
+    required int maxFailed,
+    required VoidCallback onComplete,
+  }) {
+    final mainJson = context.read<MainJson>();
+    final loaderProvider = context.read<AdLoaderProvider>();
+    final int index = key != null ? (routeIndex[key] ?? 0) : currentAdIndex;
+    final int adTypeIndex = localClick[index];
+    final int listMax = localClick.length - 1;
+
+    // Cooldown: fire onComplete if ad hasn't loaded within overrideTimer seconds.
     timer = Timer.periodic(
       Duration(
         seconds:
             mainJson.data![mainJson.version]['globalConfig']['overrideTimer'],
       ),
-      (timer) {
-        Logger().d("override Timer");
+      (t) {
+        Logger().d('override Timer');
         loaderProvider.isAdLoading = false;
         onComplete();
-        timer.cancel();
-        return;
+        t.cancel();
       },
     );
 
-    if (!mainJson.isAdsOn) {
-      loaderProvider.isAdLoading = false;
-      timer!.cancel();
-
-      onComplete();
-      return;
-    }
-
-    if ((mainJson.data![mainJson.version]['globalConfig']['globalAdFlag'] ??
-            false) ==
-        false) {
-      loaderProvider.isAdLoading = false;
-      timer!.cancel();
-
-      onComplete();
-      return;
-    }
-    if ((mainJson.data![mainJson.version]['screens'][ModalRoute.of(
-              context,
-            )?.settings.name]['localAdFlag'] ??
-            false) ==
-        false) {
-      loaderProvider.isAdLoading = false;
-      timer!.cancel();
-
-      onComplete();
-      return;
-    }
-    switch (mainJson.data![mainJson.version]['screens'][ModalRoute.of(
-      context,
-    )?.settings.name]['localClick'][index]) {
-      case 0:
-        Logger().d("Google Inter Called");
-        GoogleInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Inter Complete");
-            indexIncrement(
-              route,
-              mainJson
-                      .data![mainJson.version]['screens'][route]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            onComplete();
-            timer!.cancel();
-          },
-          onFailed: () {
-            Logger().d("Google Inter Failed");
-            failedFullScreen(
-              from: 0,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                onComplete();
-                timer!.cancel();
-              },
-            );
-          },
-        );
-        break;
-      case 1:
-        Logger().d("Applovin Inter Called");
-        ApplovinInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Applovin Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Applovin Inter Complete");
-            indexIncrement(
-              route,
-              mainJson
-                      .data![mainJson.version]['screens'][route]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Applovin Inter Failed");
-            failedFullScreen(
-              from: 1,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      case 4:
-        Logger().d("Google Reward Called");
-        GoogleRewarded().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Reward Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Reward Complete");
-            indexIncrement(
-              route,
-              mainJson
-                      .data![mainJson.version]['screens'][route]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Google Reward Failed");
-            failedFullScreen(
-              from: 4,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      case 5:
-        Logger().d("Google Reward Inter Called");
-        GoogleRewardedInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Reward Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Reward Inter Complete");
-            indexIncrement(
-              route,
-              mainJson
-                      .data![mainJson.version]['screens'][route]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Google Reward Inter Failed");
-            failedFullScreen(
-              from: 5,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      default:
-        indexIncrement(
-          route,
-          mainJson
-                  .data![mainJson.version]['screens'][route]['localClick']
-                  .length -
-              1,
-        );
+    _dispatchAd(
+      adTypeIndex: adTypeIndex,
+      context: context,
+      onLoaded: () => timer?.cancel(),
+      onComplete: () {
+        indexIncrement(key, listMax);
         loaderProvider.isAdLoading = false;
-        timer!.cancel();
-
+        timer?.cancel();
         onComplete();
-        break;
-    }
+      },
+      onFailed: () => _retryAd(
+        context: context,
+        from: adTypeIndex,
+        key: key,
+        listMax: listMax,
+        localFail: localFail,
+        maxFailed: maxFailed,
+        onComplete: () {
+          loaderProvider.isAdLoading = false;
+          timer?.cancel();
+          onComplete();
+        },
+      ),
+    );
   }
 
-  showActionBasedAds({
+  void _retryAd({
     required BuildContext context,
-    required String actionName,
-    required Function() onComplete,
+    required int from,
+    required String? key,
+    required int listMax,
+    required Map? localFail,
+    required int maxFailed,
+    required VoidCallback onComplete,
   }) {
-    MainJson mainJson = context.read<MainJson>();
-    AdLoaderProvider loaderProvider = context.read<AdLoaderProvider>();
-    loaderProvider.isAdLoading = true;
-    int index = (routeIndex[actionName] ?? 0);
-    if (!mainJson.isAdsOn) {
-      loaderProvider.isAdLoading = false;
-
+    if (localFail?[from.toString()] == null) {
       onComplete();
       return;
     }
-    if ((mainJson.data![mainJson.version]['globalConfig']['globalAdFlag'] ??
+    if (loopBreaker(maxFailed)) {
+      Logger().d('max failed');
+      onComplete();
+      return;
+    }
+
+    final int fallback = localFail![from.toString()];
+    _dispatchAd(
+      adTypeIndex: fallback,
+      context: context,
+      onLoaded: () => timer?.cancel(),
+      onComplete: () {
+        indexIncrement(key, listMax);
+        timer?.cancel();
+        onComplete();
+      },
+      onFailed: () => _retryAd(
+        context: context,
+        from: fallback,
+        key: key,
+        listMax: listMax,
+        localFail: localFail,
+        maxFailed: maxFailed,
+        onComplete: () {
+          timer?.cancel();
+          onComplete();
+        },
+      ),
+    );
+  }
+
+  // ── Guard helper ──────────────────────────────────────────────────────────
+
+  bool _blocked(MainJson m, AdLoaderProvider l, VoidCallback onComplete) {
+    if (!m.isAdsOn ||
+        (m.data![m.version]['globalConfig']['globalAdFlag'] ?? false) ==
+            false) {
+      l.isAdLoading = false;
+      onComplete();
+      return true;
+    }
+    return false;
+  }
+
+  // ── Public API ────────────────────────────────────────────────────────────
+
+  void showFullScreen({
+    required BuildContext context,
+    required VoidCallback onComplete,
+  }) {
+    final mainJson = context.read<MainJson>();
+    final loaderProvider = context.read<AdLoaderProvider>();
+    final String? route = ModalRoute.of(context)?.settings.name;
+    loaderProvider.isAdLoading = true;
+
+    if (_blocked(mainJson, loaderProvider, onComplete)) return;
+    if ((mainJson.data![mainJson.version]['screens'][route]['localAdFlag'] ??
             false) ==
         false) {
       loaderProvider.isAdLoading = false;
-
       onComplete();
       return;
     }
 
+    final v = mainJson.data![mainJson.version];
+    _resolveAndShow(
+      context: context,
+      key: route,
+      localClick: v['screens'][route]['localClick'],
+      localFail: v['screens'][route]['localFail'],
+      maxFailed: v['globalConfig']['maxFailed'],
+      onComplete: onComplete,
+    );
+  }
+
+  void showActionBasedAds({
+    required BuildContext context,
+    required String actionName,
+    required VoidCallback onComplete,
+  }) {
+    final mainJson = context.read<MainJson>();
+    final loaderProvider = context.read<AdLoaderProvider>();
+    loaderProvider.isAdLoading = true;
+
+    if (_blocked(mainJson, loaderProvider, onComplete)) return;
     if ((mainJson.data![mainJson
                 .version]['actions'][actionName]['localAdFlag'] ??
             false) ==
         false) {
       loaderProvider.isAdLoading = false;
-
       onComplete();
       return;
     }
 
-    timer = Timer.periodic(
-      Duration(
-        seconds:
-            mainJson.data![mainJson.version]['globalConfig']['overrideTimer'],
-      ),
-      (timer) {
-        Logger().d("override Timer");
-        loaderProvider.isAdLoading = false;
-        onComplete();
-        timer.cancel();
-        return;
-      },
+    final v = mainJson.data![mainJson.version];
+    _resolveAndShow(
+      context: context,
+      key: actionName,
+      localClick: v['actions'][actionName]['localClick'],
+      localFail: v['actions'][actionName]['localFail'],
+      maxFailed: v['globalConfig']['maxFailed'],
+      onComplete: onComplete,
     );
-
-    switch (mainJson.data![mainJson
-        .version]['actions'][actionName]['localClick'][index]) {
-      case 0:
-        Logger().d("Google Inter Called");
-        GoogleInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Inter Complete");
-            indexIncrement(
-              actionName,
-              mainJson
-                      .data![mainJson
-                          .version]['actions'][actionName]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Google Inter Failed");
-            failedActionBasedAds(
-              actionName: actionName,
-              from: 0,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      case 1:
-        Logger().d("Applovin Inter Called");
-        ApplovinInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Applovin Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Applovin Inter Complete");
-            indexIncrement(
-              actionName,
-              mainJson
-                      .data![mainJson
-                          .version]['actions'][actionName]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Applovin Inter Failed");
-            failedActionBasedAds(
-              actionName: actionName,
-              from: 1,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      case 4:
-        Logger().d("Google Reward Called");
-        GoogleRewarded().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Reward Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Reward Complete");
-            indexIncrement(
-              actionName,
-              mainJson
-                      .data![mainJson
-                          .version]['actions'][actionName]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Google Reward Failed");
-            failedActionBasedAds(
-              actionName: actionName,
-              from: 4,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      case 5:
-        Logger().d("Google Reward Inter Called");
-        GoogleRewardedInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Reward Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Reward Inter Complete");
-            indexIncrement(
-              actionName,
-              mainJson
-                      .data![mainJson
-                          .version]['actions'][actionName]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Google Reward Inter Failed");
-            failedActionBasedAds(
-              actionName: actionName,
-              from: 5,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-
-      default:
-        indexIncrement(
-          actionName,
-          mainJson
-                  .data![mainJson.version]['actions'][actionName]['localClick']
-                  .length -
-              1,
-        );
-        loaderProvider.isAdLoading = false;
-        timer!.cancel();
-        onComplete();
-        break;
-    }
   }
 
-  showScreenActionBasedAds({
+  void showScreenActionBasedAds({
     required BuildContext context,
     required String actionName,
-    required Function() onComplete,
+    required VoidCallback onComplete,
   }) {
-    MainJson mainJson = context.read<MainJson>();
-    String? route = ModalRoute.of(context)?.settings.name;
-    AdLoaderProvider loaderProvider = context.read<AdLoaderProvider>();
+    final mainJson = context.read<MainJson>();
+    final loaderProvider = context.read<AdLoaderProvider>();
+    final String? route = ModalRoute.of(context)?.settings.name;
     loaderProvider.isAdLoading = true;
-    int index = (routeIndex['$route/$actionName'] ?? 0);
-    if (!mainJson.isAdsOn) {
-      loaderProvider.isAdLoading = false;
 
-      onComplete();
-      return;
-    }
-    if ((mainJson.data![mainJson.version]['globalConfig']['globalAdFlag'] ??
-            false) ==
-        false) {
-      loaderProvider.isAdLoading = false;
-
-      onComplete();
-      return;
-    }
-
+    if (_blocked(mainJson, loaderProvider, onComplete)) return;
     if ((mainJson.data![mainJson.version]['screens'][route]['localAdFlag'] ??
-            false) ==
-        false) {
+                false) ==
+            false ||
+        (mainJson.data![mainJson
+                    .version]['screens'][route]['actions'][actionName]['localAdFlag'] ??
+                false) ==
+            false) {
       loaderProvider.isAdLoading = false;
-
-      onComplete();
-      return;
-    }
-    if ((mainJson.data![mainJson
-                .version]['screens'][route]['actions'][actionName]['localAdFlag'] ??
-            false) ==
-        false) {
-      loaderProvider.isAdLoading = false;
-
       onComplete();
       return;
     }
 
-    timer = Timer.periodic(
-      Duration(
-        seconds:
-            mainJson.data![mainJson.version]['globalConfig']['overrideTimer'],
-      ),
-      (timer) {
-        Logger().d("override Timer");
-        loaderProvider.isAdLoading = false;
-        onComplete();
-        timer.cancel();
-        return;
-      },
+    final v = mainJson.data![mainJson.version];
+    final action = v['screens'][route]['actions'][actionName];
+    _resolveAndShow(
+      context: context,
+      key: '$route/$actionName',
+      localClick: action['localClick'],
+      localFail: action['localFail'],
+      maxFailed: v['globalConfig']['maxFailed'],
+      onComplete: onComplete,
     );
-
-    switch (mainJson.data![mainJson
-        .version]['screens'][route]['actions'][actionName]['localClick'][index]) {
-      case 0:
-        Logger().d("Google Inter Called");
-        GoogleInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Inter Complete");
-            indexIncrement(
-              '$route/$actionName',
-              mainJson
-                      .data![mainJson
-                          .version]['screens'][route]['actions'][actionName]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Google Inter Failed");
-            failedScreenActionBasedAds(
-              actionName: actionName,
-              from: 0,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      case 1:
-        Logger().d("Applovin Inter Called");
-        ApplovinInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Applovin Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Applovin Inter Complete");
-            indexIncrement(
-              '$route/$actionName',
-              mainJson
-                      .data![mainJson
-                          .version]['screens'][route]['actions'][actionName]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Applovin Inter Failed");
-            failedScreenActionBasedAds(
-              actionName: actionName,
-              from: 1,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      case 4:
-        Logger().d("Google Reward Called");
-        GoogleRewarded().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Reward Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Reward Complete");
-            indexIncrement(
-              '$route/$actionName',
-              mainJson
-                      .data![mainJson
-                          .version]['screens'][route]['actions'][actionName]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Google Reward Failed");
-            failedScreenActionBasedAds(
-              actionName: actionName,
-              from: 4,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-      case 5:
-        Logger().d("Google Reward Inter Called");
-        GoogleRewardedInterstitial().loadAd(
-          context: context,
-          onLoaded: () {
-            Logger().d("Google Reward Inter Loaded");
-            timer!.cancel();
-          },
-          onComplete: () {
-            Logger().d("Google Reward Inter Complete");
-            indexIncrement(
-              '$route/$actionName',
-              mainJson
-                      .data![mainJson
-                          .version]['screens'][route]['actions'][actionName]['localClick']
-                      .length -
-                  1,
-            );
-            loaderProvider.isAdLoading = false;
-            timer!.cancel();
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d("Google Reward Inter Failed");
-            failedScreenActionBasedAds(
-              actionName: actionName,
-              from: 5,
-              context: context,
-              onComplete: () {
-                loaderProvider.isAdLoading = false;
-                timer!.cancel();
-                onComplete();
-              },
-            );
-          },
-        );
-        break;
-
-      default:
-        indexIncrement(
-          '$route/$actionName',
-          mainJson
-                  .data![mainJson
-                      .version]['screens'][route]['actions'][actionName]['localClick']
-                  .length -
-              1,
-        );
-        loaderProvider.isAdLoading = false;
-        timer!.cancel();
-        onComplete();
-        break;
-    }
-  }
-
-  failedFullScreen({
-    required int from,
-    required BuildContext context,
-    required Function() onComplete,
-  }) {
-    MainJson mainJson = context.read<MainJson>();
-    String? route = ModalRoute.of(context)?.settings.name;
-    Map? failedMapArray =
-        mainJson.data![mainJson.version]['screens'][ModalRoute.of(
-          context,
-        )?.settings.name]['localFail'];
-    int caseIndex = failedMapArray![from.toString()] ?? 0;
-
-    if (failedMapArray[from.toString()] == null) {
-      onComplete();
-      return;
-    }
-
-    if (loopBreaker(
-      mainJson.data![mainJson.version]['globalConfig']['maxFailed'],
-    )) {
-      Logger().d("max failed");
-      onComplete();
-    } else {
-      // timer = Timer.periodic(
-      //     Duration(
-      //         seconds: mainJson.data![mainJson.version]['globalConfig']
-      //             ['overrideTimer']), (timer) {
-      //   Logger().d("override Timer");
-      //   onComplete();
-      //   timer.cancel();
-      //   return;
-      // });
-
-      switch (caseIndex) {
-        case 0:
-          Logger().d("Google Inter Called");
-          GoogleInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Inter Complete");
-              indexIncrement(
-                route,
-                mainJson
-                        .data![mainJson.version]['screens'][route]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Inter Failed");
-              failedFullScreen(
-                from: 0,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 1:
-          Logger().d("Applovin Inter Called");
-          ApplovinInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Applovin Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Applovin Inter Complete");
-              indexIncrement(
-                route,
-                mainJson
-                        .data![mainJson.version]['screens'][route]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Applovin Inter Failed");
-              failedFullScreen(
-                from: 1,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 4:
-          Logger().d("Google Reward Called");
-          GoogleRewarded().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Reward Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Reward Complete");
-              indexIncrement(
-                route,
-                mainJson
-                        .data![mainJson.version]['screens'][route]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Reward Failed");
-              failedFullScreen(
-                from: 4,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 5:
-          Logger().d("Google Reward Inter Called");
-          GoogleRewardedInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Reward Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Reward Inter Complete");
-              indexIncrement(
-                route,
-                mainJson
-                        .data![mainJson.version]['screens'][route]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Reward Inter Failed");
-              failedFullScreen(
-                from: 5,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        default:
-          indexIncrement(
-            route,
-            mainJson
-                    .data![mainJson.version]['screens'][route]['localClick']
-                    .length -
-                1,
-          );
-          timer!.cancel();
-          onComplete();
-          break;
-      }
-    }
-  }
-
-  failedActionBasedAds({
-    required int from,
-    required String actionName,
-    required BuildContext context,
-    required Function() onComplete,
-  }) {
-    MainJson mainJson = context.read<MainJson>();
-    Map? failedMapArray =
-        mainJson.data![mainJson.version]['actions'][actionName]['localFail'];
-    int caseIndex = failedMapArray![from.toString()];
-
-    if (loopBreaker(
-      mainJson.data![mainJson.version]['globalConfig']['maxFailed'],
-    )) {
-      Logger().d("max failed");
-      onComplete();
-    } else {
-      // timer = Timer.periodic(
-      //     Duration(
-      //         seconds: mainJson.data![mainJson.version]['globalConfig']
-      //             ['overrideTimer']), (timer) {
-      //   Logger().d("override Timer");
-      //   onComplete();
-      //   timer.cancel();
-      //   return;
-      // });
-      switch (caseIndex) {
-        case 0:
-          Logger().d("Google Inter Called");
-          GoogleInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Inter Complete");
-              indexIncrement(
-                actionName,
-                mainJson
-                        .data![mainJson
-                            .version]['actions'][actionName]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Inter Failed");
-              failedActionBasedAds(
-                actionName: actionName,
-                from: 0,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 1:
-          Logger().d("Applovin Inter Called");
-          ApplovinInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Applovin Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Applovin Inter Complete");
-              indexIncrement(
-                actionName,
-                mainJson
-                        .data![mainJson
-                            .version]['actions'][actionName]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Applovin Inter Failed");
-              failedActionBasedAds(
-                actionName: actionName,
-                from: 1,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 4:
-          Logger().d("Google Reward Called");
-          GoogleRewarded().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Reward Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Reward Complete");
-              indexIncrement(
-                actionName,
-                mainJson
-                        .data![mainJson
-                            .version]['actions'][actionName]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Reward Failed");
-              failedActionBasedAds(
-                actionName: actionName,
-                from: 4,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 5:
-          Logger().d("Google Reward Inter Called");
-          GoogleRewardedInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Reward Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Reward Inter Complete");
-              indexIncrement(
-                actionName,
-                mainJson
-                        .data![mainJson
-                            .version]['actions'][actionName]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Reward Inter Failed");
-              failedActionBasedAds(
-                actionName: actionName,
-                from: 5,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-
-        default:
-          indexIncrement(
-            actionName,
-            mainJson
-                    .data![mainJson
-                        .version]['actions'][actionName]['localClick']
-                    .length -
-                1,
-          );
-          timer!.cancel();
-
-          onComplete();
-          break;
-      }
-    }
-  }
-
-  failedScreenActionBasedAds({
-    required int from,
-    required String actionName,
-    required BuildContext context,
-    required Function() onComplete,
-  }) {
-    MainJson mainJson = context.read<MainJson>();
-    String? route = ModalRoute.of(context)?.settings.name;
-
-    Map? failedMapArray =
-        mainJson.data![mainJson
-            .version]['screens'][route]['actions'][actionName]['localFail'];
-    int caseIndex = failedMapArray![from.toString()];
-
-    if (loopBreaker(
-      mainJson.data![mainJson.version]['globalConfig']['maxFailed'],
-    )) {
-      Logger().d("max failed");
-      onComplete();
-    } else {
-      // timer = Timer.periodic(
-      //     Duration(
-      //         seconds: mainJson.data![mainJson.version]['globalConfig']
-      //             ['overrideTimer']), (timer) {
-      //   Logger().d("override Timer");
-      //   onComplete();
-      //   timer.cancel();
-      //   return;
-      // });
-      switch (caseIndex) {
-        case 0:
-          Logger().d("Google Inter Called");
-          GoogleInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Inter Complete");
-              indexIncrement(
-                '$route/$actionName',
-                mainJson
-                        .data![mainJson
-                            .version]['screens'][route]['actions'][actionName]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Inter Failed");
-              failedScreenActionBasedAds(
-                actionName: actionName,
-                from: 0,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 1:
-          Logger().d("Applovin Inter Called");
-          ApplovinInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Applovin Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Applovin Inter Complete");
-              indexIncrement(
-                '$route/$actionName',
-                mainJson
-                        .data![mainJson
-                            .version]['screens'][route]['actions'][actionName]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Applovin Inter Failed");
-              failedScreenActionBasedAds(
-                actionName: actionName,
-                from: 1,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 4:
-          Logger().d("Google Reward Called");
-          GoogleRewarded().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Reward Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Reward Complete");
-              indexIncrement(
-                '$route/$actionName',
-                mainJson
-                        .data![mainJson
-                            .version]['screens'][route]['actions'][actionName]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Reward Failed");
-              failedScreenActionBasedAds(
-                actionName: actionName,
-                from: 4,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-        case 5:
-          Logger().d("Google Reward Inter Called");
-          GoogleRewardedInterstitial().loadAd(
-            context: context,
-            onLoaded: () {
-              Logger().d("Google Reward Inter Loaded");
-              timer!.cancel();
-            },
-            onComplete: () {
-              Logger().d("Google Reward Inter Complete");
-              indexIncrement(
-                '$route/$actionName',
-                mainJson
-                        .data![mainJson
-                            .version]['screens'][route]['actions'][actionName]['localClick']
-                        .length -
-                    1,
-              );
-              timer!.cancel();
-
-              onComplete();
-            },
-            onFailed: () {
-              Logger().d("Google Reward Inter Failed");
-              failedScreenActionBasedAds(
-                actionName: actionName,
-                from: 5,
-                context: context,
-                onComplete: () {
-                  timer!.cancel();
-                  onComplete();
-                },
-              );
-            },
-          );
-          break;
-
-        default:
-          indexIncrement(
-            '$route/$actionName',
-            mainJson
-                    .data![mainJson
-                        .version]['screens'][route]['actions'][actionName]['localClick']
-                    .length -
-                1,
-          );
-          timer!.cancel();
-
-          onComplete();
-          break;
-      }
-    }
   }
 }

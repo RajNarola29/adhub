@@ -3,29 +3,25 @@ import 'package:flutter/material.dart';
 import '../Ads/FullScreen/Ads.dart';
 
 extension NavigationExtension on String {
-  Future<void> performAction({
+  void performAction({
     required BuildContext context,
-    required Function() onComplete,
-  }) async {
-    await AdsRN().showActionBasedAds(
+    required VoidCallback onComplete,
+  }) {
+    Ads().showActionBasedAds(
       context: context,
       actionName: this,
-      onComplete: () {
-        onComplete();
-      },
+      onComplete: onComplete,
     );
   }
 
-  Future<void> performScreenAction({
+  void performScreenAction({
     required BuildContext context,
-    required Function() onComplete,
-  }) async {
-    await AdsRN().showScreenActionBasedAds(
+    required VoidCallback onComplete,
+  }) {
+    Ads().showScreenActionBasedAds(
       context: context,
       actionName: this,
-      onComplete: () {
-        onComplete();
-      },
+      onComplete: onComplete,
     );
   }
 }
