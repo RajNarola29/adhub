@@ -13,6 +13,6 @@ class AdhubNotifications {
 
   /// Returns whether the user is currently opted-in to receive push notifications.
   static bool get isOptedIn {
-    return OneSignal.User.pushSubscription.optedIn;
+    return OneSignal.User.pushSubscription.optedIn ?? false;
   }
 }

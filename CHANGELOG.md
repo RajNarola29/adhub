@@ -1,4 +1,8 @@
 
+## 0.0.6
+
+* Hotfix: resolved a compilation error by ensuring `<bool>` return type safety on OneSignal's `isOptedIn` method.
+
 ## 0.0.5
 
 * Added fallback logic to show the update dialog with `appUrl` if the specified app version isn't found in JSON.
