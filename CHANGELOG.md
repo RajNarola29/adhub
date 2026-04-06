@@ -1,3 +1,11 @@
+
+## 0.0.5
+
+* Added fallback logic to show the update dialog with `appUrl` if the specified app version isn't found in JSON.
+* Optimized `RateUs` dialog to not repeatedly show in the same session after the user interacts with it.
+* Added `AdhubNotifications` utility class to easily allow developers to toggle OneSignal push notifications on and off for the end-user.
+* Upgraded underlying package dependencies to the newest stable versions.
+
 ## 0.0.4
 
 * Major refactor of `Ads` singleton (reduced 1200+ lines of duplicate code).
@@ -6,15 +14,15 @@
 * Added descriptive logging for ad lifecycle events.
 * Removed `GlobalBannerAd` (logic unified into screen-level banners).
 
-## 0.0.1
+## 0.0.3
 
-* TODO: Describe initial release.
+* Added multi-platform support (Android & iOS).
+* Stability improvements and bug fixes.
 
 ## 0.0.2
 
 * TODO: quick fixes.
 
-## 0.0.3
+## 0.0.1
 
-* Added multi-platform support (Android & iOS).
-* Stability improvements and bug fixes.
+* TODO: Describe initial release.

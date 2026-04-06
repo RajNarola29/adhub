@@ -20,6 +20,8 @@ import 'adplugin/Utils/Alerts/alert_engine.dart';
 import 'adplugin/Utils/Alerts/rate_us.dart';
 import 'adplugin/Utils/navigation_service.dart';
 
+export 'adplugin/Methods/notification_manager.dart';
+
 class Adhub extends HookWidget {
   final Widget child;
   final String jsonUrl;
@@ -82,6 +84,7 @@ class Adhub extends HookWidget {
               child: const Text("Not now"),
               onPressed: () {
                 mainJson.isReviewDialogOpen = false;
+                mainJson.hasInteractedWithRateUs = true;
                 Navigator.pop(context);
               },
             ),
@@ -89,6 +92,7 @@ class Adhub extends HookWidget {
               child: const Text("Rate"),
               onPressed: () {
                 mainJson.isReviewDialogOpen = false;
+                mainJson.hasInteractedWithRateUs = true;
                 Navigator.pop(context);
                 RateUs().showRateUsDialog();
               },
@@ -122,7 +126,10 @@ class Adhub extends HookWidget {
                 BaseClass().initAdNetworks(
                   context: context,
                   onInitComplete: () async {
-                    if (mainJson.data?[version]['isUpdate'] ?? false) {
+                    if (mainJson.data?[version] == null) {
+                      showUpdateDialog(mainJson.data?['assets']?['appUrl'] ?? "");
+                      return;
+                    } else if (mainJson.data?[version]['isUpdate'] ?? false) {
                       showUpdateDialog(mainJson.data?[version]['updateUrl']);
                       return;
                     }
@@ -138,7 +145,8 @@ class Adhub extends HookWidget {
                         bool isInAppReviewAvailable = await inAppReview
                             .isAvailable();
                         if (isInAppReviewAvailable &&
-                            !mainJson.isReviewDialogOpen) {
+                            !mainJson.isReviewDialogOpen &&
+                            !mainJson.hasInteractedWithRateUs) {
                           mainJson.isReviewDialogOpen = true;
                           rateUsDialog();
                         }
@@ -148,7 +156,9 @@ class Adhub extends HookWidget {
                     String oneSignalKey = mainJson.data?["one-signal"] ?? "";
                     if (oneSignalKey.isNotEmpty) {
                       OneSignal.initialize("${mainJson.data?["one-signal"]}");
-                      OneSignal.Notifications.requestPermission(true);
+                      if (!OneSignal.Notifications.permission) {
+                        OneSignal.Notifications.requestPermission(true);
+                      }
 
                       OneSignal.Notifications.addPermissionObserver((state) {
                         print(state);

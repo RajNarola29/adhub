@@ -7,6 +7,7 @@ class MainJson extends ChangeNotifier {
   bool _isTestOn = false;
   Color _nativeColor = Colors.white;
   bool _isReviewDialogOpen = false;
+  bool _hasInteractedWithRateUs = false;
 
   static ValueNotifier<Map?> dataNotifier = ValueNotifier(null);
 
@@ -21,6 +22,8 @@ class MainJson extends ChangeNotifier {
   Color get nativeColor => _nativeColor;
 
   bool get isReviewDialogOpen => _isReviewDialogOpen;
+
+  bool get hasInteractedWithRateUs => _hasInteractedWithRateUs;
 
   set data(Map? value) {
     _data = value;
@@ -50,6 +53,11 @@ class MainJson extends ChangeNotifier {
 
   set isReviewDialogOpen(bool value) {
     _isReviewDialogOpen = value;
+    notifyListeners();
+  }
+
+  set hasInteractedWithRateUs(bool value) {
+    _hasInteractedWithRateUs = value;
     notifyListeners();
   }
 }
