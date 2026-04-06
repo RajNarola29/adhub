@@ -1,4 +1,8 @@
 
+## 0.0.7
+
+* Hotfix: Prevented a crash inside `initAdNetworks` by checking the app version and checking for forced update explicitly before execution.
+
 ## 0.0.6
 
 * Hotfix: resolved a compilation error by ensuring `<bool>` return type safety on OneSignal's `isOptedIn` method.

@@ -123,17 +123,17 @@ class Adhub extends HookWidget {
                 mainJson.isTestOn = isTestOn!;
                 mainJson.nativeColor = nativeColor!;
 
+                if (mainJson.data?[version] == null) {
+                  showUpdateDialog(mainJson.data?['assets']?['appUrl'] ?? "");
+                  return;
+                } else if (mainJson.data?[version]['isUpdate'] ?? false) {
+                  showUpdateDialog(mainJson.data?[version]['updateUrl']);
+                  return;
+                }
+
                 BaseClass().initAdNetworks(
                   context: context,
                   onInitComplete: () async {
-                    if (mainJson.data?[version] == null) {
-                      showUpdateDialog(mainJson.data?['assets']?['appUrl'] ?? "");
-                      return;
-                    } else if (mainJson.data?[version]['isUpdate'] ?? false) {
-                      showUpdateDialog(mainJson.data?[version]['updateUrl']);
-                      return;
-                    }
-
                     Timer.periodic(
                       Duration(
                         seconds: mainJson
