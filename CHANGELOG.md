@@ -1,5 +1,11 @@
 
+## 0.0.8
+
+* Performance: `AppLovinMAX.initialize()` is now non-blocking (fire-and-forget) to eliminate 4-5 second startup delay.
+* Fix: Added null-safe `?? false` check on `appLovin` ad network flag to prevent crashes when the key is missing.
+
 ## 0.0.7
+
 
 * Hotfix: Prevented a crash inside `initAdNetworks` by checking the app version and checking for forced update explicitly before execution.
 
