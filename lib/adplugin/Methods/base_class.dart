@@ -13,7 +13,7 @@ class BaseClass {
   }) async {
     MainJson mainJson = context.read<MainJson>();
     if (mainJson.data![mainJson.version]['adNetwork']['google']) {
-      await GoogleInit().onInit();
+      GoogleInit().onInit();
     }
     if (mainJson.data![mainJson.version]['adNetwork']['appLovin'] ?? false) {
       // Run AppLovin init in background — do NOT await to avoid blocking startup

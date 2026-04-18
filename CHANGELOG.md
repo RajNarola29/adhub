@@ -1,4 +1,8 @@
 
+## 0.0.9
+
+* Performance: `MobileAds.instance.initialize()` is now non-blocking to eliminate 2-3 second startup delay caused by waiting for all mediation adapters (including AppLovin) to finish.
+
 ## 0.0.8
 
 * Performance: `AppLovinMAX.initialize()` is now non-blocking (fire-and-forget) to eliminate 4-5 second startup delay.
