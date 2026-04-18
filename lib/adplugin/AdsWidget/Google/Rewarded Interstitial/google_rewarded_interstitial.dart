@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../AdLoader/ad_loader_provider.dart';
 import '../../../MainJson/main_json.dart';
+import '../../../Methods/google_init.dart';
 
 class GoogleRewardedInterstitial {
   RewardedInterstitialAd? _rewardeInterstitialdAd;
@@ -15,7 +16,8 @@ class GoogleRewardedInterstitial {
     required Function() onLoaded,
     required Function() onComplete,
     required Function() onFailed,
-  }) {
+  }) async {
+    await GoogleInit.ready;
     MainJson mainJson = context.read<MainJson>();
     RewardedInterstitialAd.load(
       adUnitId: !mainJson.isTestOn

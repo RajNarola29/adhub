@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../../../MainJson/main_json.dart';
+import '../../../Methods/google_init.dart';
 
 class GoogleInterstitial {
   InterstitialAd? interstitialAd;
@@ -14,7 +15,10 @@ class GoogleInterstitial {
     required Function() onLoaded,
     required Function() onComplete,
     required Function() onFailed,
-  }) {
+  }) async {
+    // Wait for MobileAds.initialize() to complete before loading.
+    // Allows splash screen ads to work with non-blocking init.
+    await GoogleInit.ready;
     MainJson mainJson = context.read<MainJson>();
     InterstitialAd.load(
       adUnitId: !mainJson.isTestOn

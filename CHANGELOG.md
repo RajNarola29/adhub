@@ -1,4 +1,8 @@
 
+## 0.0.10
+
+* Fix: Added `GoogleInit.ready` Completer — all Google ad loaders now await AdMob init before loading. Splash screen ads now work correctly with non-blocking startup.
+
 ## 0.0.9
 
 * Performance: `MobileAds.instance.initialize()` is now non-blocking to eliminate 2-3 second startup delay caused by waiting for all mediation adapters (including AppLovin) to finish.
