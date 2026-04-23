@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 import '../../AdLoader/ad_loader_provider.dart';
@@ -68,92 +67,43 @@ class Ads {
     required VoidCallback onComplete,
     required VoidCallback onFailed,
   }) {
-    final name = _adNames[adTypeIndex] ?? 'Unknown($adTypeIndex)';
-    Logger().d('[$name] → called');
-
     switch (adTypeIndex) {
       case 0:
         GoogleInterstitial().loadAd(
           context: context,
-          onLoaded: () {
-            Logger().d('[$name] → loaded');
-            onLoaded();
-          },
-          onComplete: () {
-            Logger().d('[$name] → complete');
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d('[$name] → failed');
-            onFailed();
-          },
+          onLoaded: onLoaded,
+          onComplete: onComplete,
+          onFailed: onFailed,
         );
       case 1:
         GoogleRewarded().loadAd(
           context: context,
-          onLoaded: () {
-            Logger().d('[$name] → loaded');
-            onLoaded();
-          },
-          onComplete: () {
-            Logger().d('[$name] → complete');
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d('[$name] → failed');
-            onFailed();
-          },
+          onLoaded: onLoaded,
+          onComplete: onComplete,
+          onFailed: onFailed,
         );
       case 2:
         GoogleRewardedInterstitial().loadAd(
           context: context,
-          onLoaded: () {
-            Logger().d('[$name] → loaded');
-            onLoaded();
-          },
-          onComplete: () {
-            Logger().d('[$name] → complete');
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d('[$name] → failed');
-            onFailed();
-          },
+          onLoaded: onLoaded,
+          onComplete: onComplete,
+          onFailed: onFailed,
         );
       case 3:
         ApplovinInterstitial().loadAd(
           context: context,
-          onLoaded: () {
-            Logger().d('[$name] → loaded');
-            onLoaded();
-          },
-          onComplete: () {
-            Logger().d('[$name] → complete');
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d('[$name] → failed');
-            onFailed();
-          },
+          onLoaded: onLoaded,
+          onComplete: onComplete,
+          onFailed: onFailed,
         );
       case 4:
         ApplovinRewarded().loadAd(
           context: context,
-          onLoaded: () {
-            Logger().d('[$name] → loaded');
-            onLoaded();
-          },
-          onComplete: () {
-            Logger().d('[$name] → complete');
-            onComplete();
-          },
-          onFailed: () {
-            Logger().d('[$name] → failed');
-            onFailed();
-          },
+          onLoaded: onLoaded,
+          onComplete: onComplete,
+          onFailed: onFailed,
         );
       default:
-        Logger().d('[Ad index $adTypeIndex] → unknown, skipping');
         onComplete();
     }
   }
@@ -183,7 +133,6 @@ class Ads {
             mainJson.data![mainJson.version]['globalConfig']['overrideTimer'],
       ),
       (t) {
-        Logger().d('override Timer');
         loaderProvider.isAdLoading = false;
         onComplete();
         t.cancel();
@@ -230,7 +179,6 @@ class Ads {
       return;
     }
     if (loopBreaker(maxFailed)) {
-      Logger().d('max failed');
       onComplete();
       return;
     }

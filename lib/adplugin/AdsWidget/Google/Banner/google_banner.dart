@@ -31,7 +31,6 @@ class GoogleBanner extends HookWidget {
         listener: BannerAdListener(
           // Called when an ad is successfully received.
           onAdLoaded: (ad) {
-            debugPrint('$ad loaded.');
 
             isLoading.value = false;
             isFailed.value = false;
@@ -39,7 +38,6 @@ class GoogleBanner extends HookWidget {
           onAdFailedToLoad: (ad, error) {
             isLoading.value = false;
             isFailed.value = true;
-            debugPrint('BannerAd failed to load: $error');
 
             ad.dispose();
           },

@@ -29,12 +29,10 @@ class ApplovinBanner extends HookWidget {
               adFormat: AdFormat.banner,
               listener: AdViewAdListener(
                 onAdLoadedCallback: (ad) {
-                  debugPrint('AppLovin banner loaded.');
                   isLoaded.value = true;
                   isFailed.value = false;
                 },
                 onAdLoadFailedCallback: (adUnitId, error) {
-                  debugPrint('AppLovin banner failed: $error');
                   isLoaded.value = false;
                   isFailed.value = true;
                 },

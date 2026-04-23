@@ -1,4 +1,10 @@
 
+## 0.0.11
+
+* Cleaned up console output by removing unnecessary `print()`, `debugPrint()`, and `Logger` statements throughout the package.
+* Removed `logger` package dependency.
+* Upgraded dependencies to latest versions (`google_mobile_ads: ^8.0.0`, `package_info_plus: ^10.1.0`, `onesignal_flutter: ^5.5.1`).
+
 ## 0.0.10
 
 * Fix: Added `GoogleInit.ready` Completer — all Google ad loaders now await AdMob init before loading. Splash screen ads now work correctly with non-blocking startup.

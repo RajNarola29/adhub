@@ -8,7 +8,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:in_app_review/in_app_review.dart';
-import 'package:logger/logger.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -113,7 +112,6 @@ class Adhub extends HookWidget {
           );
 
           if (response.statusCode == 200) {
-            print(json.encode(response.data));
 
             if (response.data != null) {
               Future.microtask(() async {
@@ -140,7 +138,6 @@ class Adhub extends HookWidget {
                             .data?[version]['globalConfig']['rateUsTimer'],
                       ),
                       (timer) async {
-                        Logger().d("Rate Us Dialog");
                         final InAppReview inAppReview = InAppReview.instance;
                         bool isInAppReviewAvailable = await inAppReview
                             .isAvailable();
@@ -152,7 +149,6 @@ class Adhub extends HookWidget {
                         }
                       },
                     );
-                    print("oneSignalKey");
                     String oneSignalKey = mainJson.data?["one-signal"] ?? "";
                     if (oneSignalKey.isNotEmpty) {
                       OneSignal.initialize("${mainJson.data?["one-signal"]}");
@@ -161,7 +157,6 @@ class Adhub extends HookWidget {
                       }
 
                       OneSignal.Notifications.addPermissionObserver((state) {
-                        print(state);
                       });
                     }
 
@@ -182,7 +177,6 @@ class Adhub extends HookWidget {
             AlertEngine.showCloseApp(context);
           });
         } catch (e) {
-          print("Catche --------> ${e.toString()}");
         }
       });
     }

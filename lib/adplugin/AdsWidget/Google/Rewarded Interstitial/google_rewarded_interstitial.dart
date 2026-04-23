@@ -56,7 +56,6 @@ class GoogleRewardedInterstitial {
           );
         },
         onAdFailedToLoad: (LoadAdError error) {
-          print(error);
           onFailed();
         },
       ),
