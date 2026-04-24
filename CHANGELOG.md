@@ -1,4 +1,8 @@
 
+## 0.0.12
+
+* Removed unused `get` package dependency to reduce package size.
+
 ## 0.0.11
 
 * Cleaned up console output by removing unnecessary `print()`, `debugPrint()`, and `Logger` statements throughout the package.
