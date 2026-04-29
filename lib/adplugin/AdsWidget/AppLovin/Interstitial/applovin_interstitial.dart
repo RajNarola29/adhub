@@ -17,12 +17,12 @@ class ApplovinInterstitial {
       InterstitialListener(
         onAdLoadedCallback: (ad) async {
           bool isReady = (await AppLovinMAX.isInterstitialReady(
-            mainJson.data!['adIds']['applovin']['fullScreen'],
+            mainJson.data!['ad_config']['applovin_fullscreen'],
           ))!;
           if (isReady) {
             onLoaded();
             AppLovinMAX.showInterstitial(
-              mainJson.data!['adIds']['applovin']['fullScreen'],
+              mainJson.data!['ad_config']['applovin_fullscreen'],
             );
           }
         },
@@ -39,7 +39,7 @@ class ApplovinInterstitial {
     );
 
     AppLovinMAX.loadInterstitial(
-      mainJson.data!['adIds']['applovin']['fullScreen'],
+      mainJson.data!['ad_config']['applovin_fullscreen'],
     );
   }
 }

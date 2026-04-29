@@ -24,7 +24,7 @@ class AdLoader extends HookWidget {
                 ? Container(
                     height: double.infinity,
                     width: double.infinity,
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     child: Center(
                       child: LoadingAnimationWidget.hexagonDots(
                         color: Colors.white,

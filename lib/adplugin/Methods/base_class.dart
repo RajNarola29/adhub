@@ -11,14 +11,14 @@ class BaseClass {
     required Function() onInitComplete,
   }) async {
     MainJson mainJson = context.read<MainJson>();
-    if (mainJson.data![mainJson.version]['adNetwork']['google']) {
+    if (mainJson.data!['version_config'][mainJson.version]['adNetwork']['google'] ?? false) {
       GoogleInit().onInit();
     }
-    if (mainJson.data![mainJson.version]['adNetwork']['appLovin'] ?? false) {
+    if (mainJson.data!['version_config'][mainJson.version]['adNetwork']['appLovin'] ?? false) {
       // Run AppLovin init in background — do NOT await to avoid blocking startup
       AppLovinMAX.initialize(
-        mainJson.data!['adIds']['applovin']['id'] != ""
-            ? mainJson.data!['adIds']['applovin']['id']
+        (mainJson.data!['ad_config']['applovin_sdk_key'] != null && mainJson.data!['ad_config']['applovin_sdk_key'] != "")
+            ? mainJson.data!['ad_config']['applovin_sdk_key']
             : "xiAs_Fs3BiExPelVuawzyDTU2Sy4GL2d6KB1c7C1loiv64T5oquTwRRIJbHC3qO0qRI_65NChIkGy3U2i6rWXn",
       );
     }

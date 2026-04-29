@@ -21,7 +21,7 @@ class GoogleRewardedInterstitial {
     MainJson mainJson = context.read<MainJson>();
     RewardedInterstitialAd.load(
       adUnitId: !mainJson.isTestOn
-          ? '${mainJson.data!['adIds']['google']['rewardInter']}'
+          ? '${mainJson.data!['ad_config']['admob_reward_inter']}'
           : Platform.isIOS
           ? 'ca-app-pub-3940256099942544/5354046379'
           : 'ca-app-pub-3940256099942544/6978759866',
@@ -38,8 +38,7 @@ class GoogleRewardedInterstitial {
                   ad.dispose();
                 },
                 onAdDismissedFullScreenContent: (ad) {
-                  if (mainJson.data![mainJson
-                      .version]['globalConfig']['rewardOverRide']) {
+                  if (mainJson.data!['version_config'][mainJson.version]['globalConfig']['rewardOverRide']) {
                     onComplete();
                   }
                   context.read<AdLoaderProvider>().isAdLoading = false;

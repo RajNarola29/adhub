@@ -8,7 +8,7 @@ class GoogleInit {
   static final Completer<void> _completer = Completer<void>();
   static Future<void> get ready => _completer.future;
 
-  onInit() {
+  void onInit() {
     // Non-blocking — startup is not delayed.
     MobileAds.instance.initialize().then((_) {
       if (!_completer.isCompleted) _completer.complete();

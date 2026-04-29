@@ -17,12 +17,12 @@ class ApplovinRewarded {
       RewardedAdListener(
         onAdLoadedCallback: (ad) async {
           bool isReady = (await AppLovinMAX.isRewardedAdReady(
-            mainJson.data!['adIds']['applovin']['reward'],
+            mainJson.data!['ad_config']['applovin_reward'],
           ))!;
           if (isReady) {
             onLoaded();
             AppLovinMAX.showRewardedAd(
-              mainJson.data!['adIds']['applovin']['reward'],
+              mainJson.data!['ad_config']['applovin_reward'],
             );
           }
         },
@@ -40,7 +40,7 @@ class ApplovinRewarded {
     );
 
     AppLovinMAX.loadRewardedAd(
-      mainJson.data!['adIds']['applovin']['reward'],
+      mainJson.data!['ad_config']['applovin_reward'],
     );
   }
 }

@@ -22,29 +22,19 @@ class BannerAd extends HookWidget {
         return;
       }
 
-      if ((mainJson.data![mainJson.version]['globalConfig']['globalAdFlag'] ??
-              false) ==
-          false) {
+      final v = mainJson.data?['version_config']?[mainJson.version];
+      final route = ModalRoute.of(parentContext)?.settings.name;
+      final screenConfig = v?['screens']?[route];
+
+      if ((v?['globalConfig']?['globalAdFlag'] ?? false) == false ||
+          (v?['globalConfig']?['globalBanner'] ?? false) == false ||
+          screenConfig == null ||
+          (screenConfig['localAdFlag'] ?? false) == false) {
         bannerWidget.value = const SizedBox(height: 0, width: 0);
         return;
       }
-      if ((mainJson.data![mainJson.version]['globalConfig']['globalBanner'] ??
-              false) ==
-          false) {
-        bannerWidget.value = const SizedBox(height: 0, width: 0);
-        return;
-      }
-      if ((mainJson.data![mainJson.version]['screens'][ModalRoute.of(
-                parentContext,
-              )?.settings.name]['localAdFlag'] ??
-              false) ==
-          false) {
-        bannerWidget.value = const SizedBox(height: 0, width: 0);
-        return;
-      }
-      switch (mainJson.data![mainJson.version]['screens'][ModalRoute.of(
-        parentContext,
-      )?.settings.name]['banner']) {
+
+      switch (screenConfig['banner']) {
         case 0:
           bannerWidget.value = const GoogleBanner();
           break;

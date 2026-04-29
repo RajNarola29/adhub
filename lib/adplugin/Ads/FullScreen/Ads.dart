@@ -52,14 +52,6 @@ class Ads {
 
   // ── Core ad dispatcher ────────────────────────────────────────────────────
 
-  static const _adNames = {
-    0: 'Google Interstitial',
-    1: 'Google Rewarded',
-    2: 'Google Rewarded Inter',
-    3: 'AppLovin Interstitial',
-    4: 'AppLovin Rewarded',
-  };
-
   void _dispatchAd({
     required int adTypeIndex,
     required BuildContext context,
@@ -127,11 +119,9 @@ class Ads {
     final int listMax = localClick.length - 1;
 
     // Cooldown: fire onComplete if ad hasn't loaded within overrideTimer seconds.
+    final int timeout = mainJson.data?['version_config']?[mainJson.version]?['globalConfig']?['overrideTimer'] ?? 30;
     timer = Timer.periodic(
-      Duration(
-        seconds:
-            mainJson.data![mainJson.version]['globalConfig']['overrideTimer'],
-      ),
+      Duration(seconds: timeout),
       (t) {
         loaderProvider.isAdLoading = false;
         onComplete();
@@ -211,9 +201,8 @@ class Ads {
   // ── Guard helper ──────────────────────────────────────────────────────────
 
   bool _blocked(MainJson m, AdLoaderProvider l, VoidCallback onComplete) {
-    if (!m.isAdsOn ||
-        (m.data![m.version]['globalConfig']['globalAdFlag'] ?? false) ==
-            false) {
+    final v = m.data?['version_config']?[m.version];
+    if (!m.isAdsOn || (v?['globalConfig']?['globalAdFlag'] ?? false) == false) {
       l.isAdLoading = false;
       onComplete();
       return true;
@@ -233,21 +222,21 @@ class Ads {
     loaderProvider.isAdLoading = true;
 
     if (_blocked(mainJson, loaderProvider, onComplete)) return;
-    if ((mainJson.data![mainJson.version]['screens'][route]['localAdFlag'] ??
-            false) ==
-        false) {
+    final v = mainJson.data?['version_config']?[mainJson.version];
+    final screenConfig = v?['screens']?[route];
+
+    if (screenConfig == null || (screenConfig['localAdFlag'] ?? false) == false) {
       loaderProvider.isAdLoading = false;
       onComplete();
       return;
     }
 
-    final v = mainJson.data![mainJson.version];
     _resolveAndShow(
       context: context,
       key: route,
-      localClick: v['screens'][route]['localClick'],
-      localFail: v['screens'][route]['localFail'],
-      maxFailed: v['globalConfig']['maxFailed'],
+      localClick: screenConfig['localClick'] ?? [],
+      localFail: screenConfig['localFail'] ?? {},
+      maxFailed: v?['globalConfig']?['maxFailed'] ?? 0,
       onComplete: onComplete,
     );
   }
@@ -262,22 +251,21 @@ class Ads {
     loaderProvider.isAdLoading = true;
 
     if (_blocked(mainJson, loaderProvider, onComplete)) return;
-    if ((mainJson.data![mainJson
-                .version]['actions'][actionName]['localAdFlag'] ??
-            false) ==
-        false) {
+    final v = mainJson.data?['version_config']?[mainJson.version];
+    final actionConfig = v?['actions']?[actionName];
+
+    if (actionConfig == null || (actionConfig['localAdFlag'] ?? false) == false) {
       loaderProvider.isAdLoading = false;
       onComplete();
       return;
     }
 
-    final v = mainJson.data![mainJson.version];
     _resolveAndShow(
       context: context,
       key: actionName,
-      localClick: v['actions'][actionName]['localClick'],
-      localFail: v['actions'][actionName]['localFail'],
-      maxFailed: v['globalConfig']['maxFailed'],
+      localClick: actionConfig['localClick'] ?? [],
+      localFail: actionConfig['localFail'] ?? {},
+      maxFailed: v?['globalConfig']?['maxFailed'] ?? 0,
       onComplete: onComplete,
     );
   }
@@ -293,26 +281,23 @@ class Ads {
     loaderProvider.isAdLoading = true;
 
     if (_blocked(mainJson, loaderProvider, onComplete)) return;
-    if ((mainJson.data![mainJson.version]['screens'][route]['localAdFlag'] ??
-                false) ==
-            false ||
-        (mainJson.data![mainJson
-                    .version]['screens'][route]['actions'][actionName]['localAdFlag'] ??
-                false) ==
-            false) {
+    final v = mainJson.data?['version_config']?[mainJson.version];
+    final screenConfig = v?['screens']?[route];
+    final actionConfig = screenConfig?['actions']?[actionName];
+
+    if (screenConfig == null || (screenConfig['localAdFlag'] ?? false) == false ||
+        actionConfig == null || (actionConfig['localAdFlag'] ?? false) == false) {
       loaderProvider.isAdLoading = false;
       onComplete();
       return;
     }
 
-    final v = mainJson.data![mainJson.version];
-    final action = v['screens'][route]['actions'][actionName];
     _resolveAndShow(
       context: context,
       key: '$route/$actionName',
-      localClick: action['localClick'],
-      localFail: action['localFail'],
-      maxFailed: v['globalConfig']['maxFailed'],
+      localClick: actionConfig['localClick'] ?? [],
+      localFail: actionConfig['localFail'] ?? {},
+      maxFailed: v?['globalConfig']?['maxFailed'] ?? 0,
       onComplete: onComplete,
     );
   }

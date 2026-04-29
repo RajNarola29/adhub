@@ -17,7 +17,7 @@ class ApplovinBanner extends HookWidget {
 
     final adUnitId = mainJson.isTestOn
         ? 'YOUR_APPLOVIN_TEST_BANNER_ID'
-        : mainJson.data!['adIds']['applovin']['banner'];
+        : mainJson.data!['ad_config']['applovin_banner'];
 
     return SizedBox(
       width: double.infinity,

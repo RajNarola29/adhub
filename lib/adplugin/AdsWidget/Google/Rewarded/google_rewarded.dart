@@ -22,7 +22,7 @@ class GoogleRewarded {
 
     RewardedAd.load(
       adUnitId: !mainJson.isTestOn
-          ? '${mainJson.data!['adIds']['google']['reward']}'
+          ? '${mainJson.data!['ad_config']['admob_reward']}'
           : Platform.isIOS
           ? 'ca-app-pub-3940256099942544/1712485313'
           : 'ca-app-pub-3940256099942544/5224354917',
@@ -39,8 +39,7 @@ class GoogleRewarded {
               ad.dispose();
             },
             onAdDismissedFullScreenContent: (ad) {
-              if (mainJson.data![mainJson
-                  .version]['globalConfig']['rewardOverRide']) {
+              if (mainJson.data!['version_config'][mainJson.version]['globalConfig']['rewardOverRide']) {
                 onComplete();
               }
               context.read<AdLoaderProvider>().isAdLoading = false;

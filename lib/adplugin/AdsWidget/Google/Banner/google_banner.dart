@@ -22,7 +22,7 @@ class GoogleBanner extends HookWidget {
     loadAd() {
       bannerAd.value = BannerAd(
         adUnitId: !mainJson.isTestOn
-            ? '${mainJson.data!['adIds']['google']['banner']}'
+            ? '${mainJson.data!['ad_config']['admob_banner']}'
             : Platform.isIOS
             ? 'ca-app-pub-3940256099942544/2934735716'
             : 'ca-app-pub-3940256099942544/6300978111',

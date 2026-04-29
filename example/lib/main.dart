@@ -20,7 +20,6 @@ class MyApp extends StatelessWidget {
               // Navigation
             },
             jsonUrl: "",
-            apiKey: "",
             version: '',
             child: SizedBox(),
           ),

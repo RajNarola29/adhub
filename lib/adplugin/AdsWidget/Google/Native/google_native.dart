@@ -21,7 +21,7 @@ class GoogleNative extends HookWidget {
     loadAd() {
       nativeAd.value = NativeAd(
         adUnitId: !mainJson.isTestOn
-            ? '${mainJson.data!['adIds']['google']['native']}'
+            ? '${mainJson.data!['ad_config']['admob_native']}'
             : Platform.isIOS
             ? 'ca-app-pub-3940256099942544/3986624511'
             : 'ca-app-pub-3940256099942544/2247696110',

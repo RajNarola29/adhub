@@ -1,3 +1,7 @@
+## 0.0.13
+
+* Documentation: Simplified README and updated installation instructions.
+* Fix: Quick fixes and stability improvements.
 
 ## 0.0.12
 

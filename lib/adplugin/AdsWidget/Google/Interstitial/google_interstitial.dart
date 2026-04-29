@@ -22,7 +22,7 @@ class GoogleInterstitial {
     MainJson mainJson = context.read<MainJson>();
     InterstitialAd.load(
       adUnitId: !mainJson.isTestOn
-          ? '${mainJson.data!['adIds']['google']['fullScreen']}'
+          ? '${mainJson.data!['ad_config']['admob_fullscreen']}'
           : Platform.isIOS
           ? 'ca-app-pub-3940256099942544/4411468910'
           : 'ca-app-pub-3940256099942544/1033173712',

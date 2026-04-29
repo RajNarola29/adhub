@@ -7,10 +7,10 @@ class BannerWrapperAd extends StatelessWidget {
   final BuildContext parentContext;
 
   const BannerWrapperAd({
-    Key? key,
+    super.key,
     required this.child,
     required this.parentContext,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
