@@ -17,6 +17,7 @@ import 'adplugin/MainJson/main_json.dart';
 import 'adplugin/Methods/base_class.dart';
 import 'adplugin/Utils/Alerts/rate_us.dart';
 import 'adplugin/Utils/navigation_service.dart';
+import 'adplugin/Utils/Alerts/adhub_dialogs.dart';
 
 export 'adplugin/Methods/notification_manager.dart';
 
@@ -64,375 +65,8 @@ class Adhub extends HookWidget {
   Widget build(BuildContext context) {
     MainJson mainJson = context.watch<MainJson>();
 
-    showUpdateDialog(String url) {
-      if (Platform.isIOS) {
-        return showCupertinoDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => CupertinoAlertDialog(
-            title: const Text("New Update Available"),
-            content: const Text(
-              "New Update for your app is now available please update app to continue",
-            ),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text("Update Now"),
-                onPressed: () {
-                  launchUrl(Uri.parse(url));
-                },
-              ),
-            ],
-          ),
-        );
-      } else {
-        return showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: const Text(
-              "New Update Available",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            content: const Text(
-              "New Update for your app is now available please update app to continue",
-              style: TextStyle(color: Colors.black54),
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.blueAccent,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                child: const Text("UPDATE NOW"),
-                onPressed: () {
-                  launchUrl(Uri.parse(url));
-                },
-              ),
-            ],
-          ),
-        );
-      }
-    }
 
-    showMigrationDialog(String url) {
-      if (Platform.isIOS) {
-        return showCupertinoDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => CupertinoAlertDialog(
-            title: const Text("App Moved!"),
-            content: const Text(
-              "We have moved to a new and improved app! Please download it to continue.",
-            ),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text("Download New App"),
-                onPressed: () {
-                  launchUrl(Uri.parse(url));
-                },
-              ),
-            ],
-          ),
-        );
-      } else {
-        return showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: const Text(
-              "App Moved!",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            content: const Text(
-              "We have moved to a new and improved app! Please download it to continue.",
-              style: TextStyle(color: Colors.black54),
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.blueAccent,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                child: const Text("DOWNLOAD NEW APP"),
-                onPressed: () {
-                  launchUrl(Uri.parse(url));
-                },
-              ),
-            ],
-          ),
-        );
-      }
-    }
-
-    showSoftUpdateDialog(String url, String remoteVersion) {
-      if (Platform.isIOS) {
-        return showCupertinoDialog(
-          context: context,
-          barrierDismissible: true,
-          builder: (dialogContext) => CupertinoAlertDialog(
-            title: const Text("New Version Available"),
-            content: const Text(
-              "A newer version of the app is available. Would you like to update now?",
-            ),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text("Update Later"),
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  prefs.setString(
-                    'soft_update_last_shown_$remoteVersion',
-                    DateTime.now().toIso8601String(),
-                  );
-                  if (!dialogContext.mounted) return;
-                  Navigator.pop(dialogContext);
-                },
-              ),
-              CupertinoDialogAction(
-                child: const Text("Update Now"),
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  prefs.setString(
-                    'soft_update_last_shown_$remoteVersion',
-                    DateTime.now().toIso8601String(),
-                  );
-                  launchUrl(Uri.parse(url));
-                  if (!dialogContext.mounted) return;
-                  Navigator.pop(dialogContext);
-                },
-              ),
-            ],
-          ),
-        );
-      } else {
-        return showDialog(
-          context: context,
-          barrierDismissible: true,
-          builder: (dialogContext) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: const Text(
-              "New Version Available",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            content: const Text(
-              "A newer version of the app is available. Would you like to update now?",
-              style: TextStyle(color: Colors.black54),
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.grey,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                child: const Text("UPDATE LATER"),
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  prefs.setString(
-                    'soft_update_last_shown_$remoteVersion',
-                    DateTime.now().toIso8601String(),
-                  );
-                  if (!dialogContext.mounted) return;
-                  Navigator.pop(dialogContext);
-                },
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.blueAccent,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                child: const Text("UPDATE NOW"),
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  prefs.setString(
-                    'soft_update_last_shown_$remoteVersion',
-                    DateTime.now().toIso8601String(),
-                  );
-                  launchUrl(Uri.parse(url));
-                  if (!dialogContext.mounted) return;
-                  Navigator.pop(dialogContext);
-                },
-              ),
-            ],
-          ),
-        );
-      }
-    }
-
-    rateUsDialog() async {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      if (Platform.isIOS) {
-        showCupertinoDialog(
-          context: NavigationService.navigatorKey.currentContext!,
-          barrierDismissible: true,
-          builder: (context) => CupertinoAlertDialog(
-            title: Text(packageInfo.appName),
-            content: const Text(
-              "If you like our app. Would you mind to take moment to Rate Us.",
-            ),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text("Not now"),
-                onPressed: () {
-                  mainJson.isReviewDialogOpen = false;
-                  mainJson.hasInteractedWithRateUs = true;
-                  Navigator.pop(context);
-                },
-              ),
-              CupertinoDialogAction(
-                child: const Text("Rate"),
-                onPressed: () {
-                  mainJson.isReviewDialogOpen = false;
-                  mainJson.hasInteractedWithRateUs = true;
-                  Navigator.pop(context);
-                  RateUs().showRateUsDialog();
-                },
-              ),
-            ],
-          ),
-        );
-      } else {
-        showDialog(
-          context: NavigationService.navigatorKey.currentContext!,
-          barrierDismissible: true,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Text(
-              packageInfo.appName,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            content: const Text(
-              "If you like our app. Would you mind to take moment to Rate Us.",
-              style: TextStyle(color: Colors.black54),
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.grey,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                child: const Text("NOT NOW"),
-                onPressed: () {
-                  mainJson.isReviewDialogOpen = false;
-                  mainJson.hasInteractedWithRateUs = true;
-                  Navigator.pop(context);
-                },
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.blueAccent,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                child: const Text("RATE"),
-                onPressed: () {
-                  mainJson.isReviewDialogOpen = false;
-                  mainJson.hasInteractedWithRateUs = true;
-                  Navigator.pop(context);
-                  RateUs().showRateUsDialog();
-                },
-              ),
-            ],
-          ),
-        );
-      }
-    }
-
-    // Forward reference so showNetworkErrorDialog can call mainFetchingLogic
-    // even though it is declared later in the build method.
     late final VoidCallback retryFetch;
-
-    showNetworkErrorDialog() {
-      if (Platform.isIOS) {
-        showCupertinoDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => CupertinoAlertDialog(
-            title: const Text("Network Issue"),
-            content: const Text(
-              "Slow internet or network error. Please check your connection and try again.",
-            ),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text("Retry"),
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                  retryFetch();
-                },
-              ),
-            ],
-          ),
-        );
-      } else {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text("Network Issue", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-            content: const Text(
-              "Slow internet or network error. Please check your connection and try again.",
-              style: TextStyle(color: Colors.black54),
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.blueAccent, textStyle: const TextStyle(fontWeight: FontWeight.bold)),
-                child: const Text("RETRY"),
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                  retryFetch();
-                },
-              ),
-            ],
-          ),
-        );
-      }
-    }
-
-    showMaintenanceDialog(String message) {
-      if (Platform.isIOS) {
-        showCupertinoDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => CupertinoAlertDialog(
-            title: const Text("Maintenance Break"),
-            content: Text(message),
-          ),
-        );
-      } else {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text("Maintenance Break", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-            content: Text(
-              message,
-              style: const TextStyle(color: Colors.black54),
-            ),
-          ),
-        );
-      }
-    }
 
     mainFetchingLogic() {
       retryFetch = mainFetchingLogic;
@@ -469,25 +103,26 @@ class Adhub extends HookWidget {
 
                 // 0. Maintenance Check
                 if (appData?['is_maintenance'] == true) {
-                  showMaintenanceDialog(appData?['maintenance_message'] ?? "Servers are currently under maintenance. Please try again later.");
+                  AdhubDialogs.showMaintenanceDialog(context, appData?['maintenance_message'] ?? "Servers are currently under maintenance. Please try again later.");
                   return;
                 }
 
                 // 1. Migration Check
                 if (appData?['is_migrated'] == true) {
-                  showMigrationDialog(appData?['migration_url'] ?? "");
+                  AdhubDialogs.showMigrationDialog(context, appData?['migration_url'] ?? "");
                   return;
                 }
 
                 // 2. Unknown Version
                 if (currentVerData == null) {
-                  showUpdateDialog(appData?['app_store_url'] ?? "");
+                  AdhubDialogs.showUpdateDialog(context, appData?['app_store_url'] ?? "");
                   return;
                 }
 
                 // 3. Explicit Force Update
                 if (currentVerData['updateInfo']?['isUpdate'] == true) {
-                  showUpdateDialog(
+                  AdhubDialogs.showUpdateDialog(
+                    context,
                     currentVerData['updateInfo']?['updateUrl'] ??
                         appData?['app_store_url'] ??
                         "",
@@ -497,6 +132,7 @@ class Adhub extends HookWidget {
 
                 // 4. Soft Update
                 final remoteCurrentVersion = appData?['current_version'];
+                bool isSoftUpdatePending = false;
                 if (remoteCurrentVersion != null &&
                     _isVersionOlder(version, remoteCurrentVersion)) {
                   final prefs = await SharedPreferences.getInstance();
@@ -512,13 +148,7 @@ class Adhub extends HookWidget {
                   }
 
                   if (shouldShow) {
-                    showSoftUpdateDialog(
-                      currentVerData['updateInfo']?['updateUrl'] ??
-                          appData?['app_store_url'] ??
-                          "",
-                      remoteCurrentVersion,
-                    );
-                    // Do not return here, allow app to load in background
+                    isSoftUpdatePending = true;
                   }
                 }
 
@@ -531,14 +161,30 @@ class Adhub extends HookWidget {
                             .data?['version_config']?[version]['globalConfig']['rateUsTimer'],
                       ),
                       (timer) async {
+                        final prefs = await SharedPreferences.getInstance();
+                        final bool rateUsCompleted = prefs.getBool('rate_us_completed') ?? false;
+
+                        if (rateUsCompleted) {
+                          timer.cancel();
+                          return;
+                        }
+
+                        final String? notNowStr = prefs.getString('rate_us_not_now_timestamp');
+                        if (notNowStr != null) {
+                          final notNowTime = DateTime.parse(notNowStr);
+                          if (DateTime.now().difference(notNowTime).inDays < 7) {
+                            timer.cancel();
+                            return;
+                          }
+                        }
+
                         final InAppReview inAppReview = InAppReview.instance;
-                        final bool isInAppReviewAvailable = await inAppReview
-                            .isAvailable();
+                        final bool isInAppReviewAvailable = await inAppReview.isAvailable();
+
                         if (isInAppReviewAvailable &&
-                            !mainJson.isReviewDialogOpen &&
-                            !mainJson.hasInteractedWithRateUs) {
+                            !mainJson.isReviewDialogOpen) {
                           mainJson.isReviewDialogOpen = true;
-                          rateUsDialog();
+                          AdhubDialogs.showRateUsDialog(mainJson);
                         }
                       },
                     );
@@ -557,7 +203,19 @@ class Adhub extends HookWidget {
                       await AppTrackingTransparency.requestTrackingAuthorization();
                     }
                     if (!context.mounted) return;
-                    onComplete(context, mainJson.data!);
+                    
+                    if (isSoftUpdatePending) {
+                      AdhubDialogs.showSoftUpdateDialog(
+                        context,
+                        currentVerData?['updateInfo']?['updateUrl'] ?? appData?['app_store_url'] ?? "",
+                        remoteCurrentVersion!,
+                        () {
+                          onComplete(context, mainJson.data!);
+                        },
+                      );
+                    } else {
+                      onComplete(context, mainJson.data!);
+                    }
                   },
                 );
               });
@@ -565,11 +223,11 @@ class Adhub extends HookWidget {
           }
         } on DioException {
           Future.microtask(() {
-            showNetworkErrorDialog();
+            AdhubDialogs.showNetworkErrorDialog(context, retryFetch);
           });
         } catch (e) {
           Future.microtask(() {
-            showNetworkErrorDialog();
+            AdhubDialogs.showNetworkErrorDialog(context, retryFetch);
           });
         }
       });

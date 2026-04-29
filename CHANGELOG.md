@@ -1,3 +1,8 @@
+## 0.0.14
+
+* Refactor: Extracted all dialog UI definitions into a centralized utility class `AdhubDialogs` to improve maintainability and reduce main file size.
+* Optimization: Replaced legacy inline dialog functions with clean calls to static utility methods.
+
 ## 0.0.13
 
 * Documentation: Simplified README and updated installation instructions.
