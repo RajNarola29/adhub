@@ -1,3 +1,10 @@
+## 0.0.15
+
+* Fix: App Tracking Transparency (ATT) dialog now reliably appears on the very first launch on iOS.
+* Fix: ATT request is now made **before** OneSignal notification permission to avoid iOS silently dropping the dialog when two system permission prompts collide.
+* Fix: Added `trackingAuthorizationStatus` check — ATT is only requested when status is `notDetermined`, preventing unnecessary calls on subsequent launches.
+* Improvement: Added a 500ms settle delay before presenting the ATT dialog to ensure the root view is fully rendered when iOS shows the prompt.
+
 ## 0.0.14
 
 * Refactor: Extracted all dialog UI definitions into a centralized utility class `AdhubDialogs` to improve maintainability and reduce main file size.

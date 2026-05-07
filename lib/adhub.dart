@@ -3,20 +3,15 @@ import 'dart:io';
 
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'adplugin/MainJson/main_json.dart';
 import 'adplugin/Methods/base_class.dart';
-import 'adplugin/Utils/Alerts/rate_us.dart';
-import 'adplugin/Utils/navigation_service.dart';
 import 'adplugin/Utils/Alerts/adhub_dialogs.dart';
 
 export 'adplugin/Methods/notification_manager.dart';
@@ -65,17 +60,18 @@ class Adhub extends HookWidget {
   Widget build(BuildContext context) {
     MainJson mainJson = context.watch<MainJson>();
 
-
     late final VoidCallback retryFetch;
 
     mainFetchingLogic() {
       retryFetch = mainFetchingLogic;
       Future.microtask(() async {
         try {
-          var dio = Dio(BaseOptions(
-            connectTimeout: const Duration(seconds: 10),
-            receiveTimeout: const Duration(seconds: 10),
-          ));
+          var dio = Dio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
+            ),
+          );
           var response = await dio.request(
             jsonUrl,
             options: Options(method: 'GET'),
@@ -103,19 +99,29 @@ class Adhub extends HookWidget {
 
                 // 0. Maintenance Check
                 if (appData?['is_maintenance'] == true) {
-                  AdhubDialogs.showMaintenanceDialog(context, appData?['maintenance_message'] ?? "Servers are currently under maintenance. Please try again later.");
+                  AdhubDialogs.showMaintenanceDialog(
+                    context,
+                    appData?['maintenance_message'] ??
+                        "Servers are currently under maintenance. Please try again later.",
+                  );
                   return;
                 }
 
                 // 1. Migration Check
                 if (appData?['is_migrated'] == true) {
-                  AdhubDialogs.showMigrationDialog(context, appData?['migration_url'] ?? "");
+                  AdhubDialogs.showMigrationDialog(
+                    context,
+                    appData?['migration_url'] ?? "",
+                  );
                   return;
                 }
 
                 // 2. Unknown Version
                 if (currentVerData == null) {
-                  AdhubDialogs.showUpdateDialog(context, appData?['app_store_url'] ?? "");
+                  AdhubDialogs.showUpdateDialog(
+                    context,
+                    appData?['app_store_url'] ?? "",
+                  );
                   return;
                 }
 
@@ -162,24 +168,29 @@ class Adhub extends HookWidget {
                       ),
                       (timer) async {
                         final prefs = await SharedPreferences.getInstance();
-                        final bool rateUsCompleted = prefs.getBool('rate_us_completed') ?? false;
+                        final bool rateUsCompleted =
+                            prefs.getBool('rate_us_completed') ?? false;
 
                         if (rateUsCompleted) {
                           timer.cancel();
                           return;
                         }
 
-                        final String? notNowStr = prefs.getString('rate_us_not_now_timestamp');
+                        final String? notNowStr = prefs.getString(
+                          'rate_us_not_now_timestamp',
+                        );
                         if (notNowStr != null) {
                           final notNowTime = DateTime.parse(notNowStr);
-                          if (DateTime.now().difference(notNowTime).inDays < 7) {
+                          if (DateTime.now().difference(notNowTime).inDays <
+                              7) {
                             timer.cancel();
                             return;
                           }
                         }
 
                         final InAppReview inAppReview = InAppReview.instance;
-                        final bool isInAppReviewAvailable = await inAppReview.isAvailable();
+                        final bool isInAppReviewAvailable = await inAppReview
+                            .isAvailable();
 
                         if (isInAppReviewAvailable &&
                             !mainJson.isReviewDialogOpen) {
@@ -188,6 +199,19 @@ class Adhub extends HookWidget {
                         }
                       },
                     );
+                    if (Platform.isIOS) {
+                      final trackingStatus = await AppTrackingTransparency
+                          .trackingAuthorizationStatus;
+                      if (trackingStatus ==
+                          TrackingStatus.notDetermined) {
+                        await Future.delayed(
+                          const Duration(milliseconds: 500),
+                        );
+                        await AppTrackingTransparency
+                            .requestTrackingAuthorization();
+                      }
+                    }
+
                     final String oneSignalKey =
                         mainJson.data?['app']?['onesignal_app_id'] ?? "";
 
@@ -198,16 +222,14 @@ class Adhub extends HookWidget {
                         await OneSignal.Notifications.requestPermission(true);
                       }
                     }
-
-                    if (Platform.isIOS) {
-                      await AppTrackingTransparency.requestTrackingAuthorization();
-                    }
                     if (!context.mounted) return;
-                    
+
                     if (isSoftUpdatePending) {
                       AdhubDialogs.showSoftUpdateDialog(
                         context,
-                        currentVerData?['updateInfo']?['updateUrl'] ?? appData?['app_store_url'] ?? "",
+                        currentVerData?['updateInfo']?['updateUrl'] ??
+                            appData?['app_store_url'] ??
+                            "",
                         remoteCurrentVersion!,
                         () {
                           onComplete(context, mainJson.data!);
