@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +14,18 @@ class BaseClass {
     required Function() onInitComplete,
   }) async {
     MainJson mainJson = context.read<MainJson>();
+
+    // ATT must run before UMP consent and MobileAds init on iOS.
+    if (Platform.isIOS) {
+      final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+      if (status == TrackingStatus.notDetermined) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        await AppTrackingTransparency.requestTrackingAuthorization();
+      }
+    }
+
     if (mainJson.data!['version_config'][mainJson.version]['adNetwork']['google'] ?? false) {
+      // Non-blocking — UMP consent + MobileAds.initialize run in background.
       GoogleInit().onInit();
     }
     if (mainJson.data!['version_config'][mainJson.version]['adNetwork']['appLovin'] ?? false) {

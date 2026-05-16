@@ -305,7 +305,9 @@ class AdhubDialogs {
                 mainJson.isReviewDialogOpen = false;
                 if (!context.mounted) return;
                 Navigator.pop(context);
-                RateUs().showRateUsDialog();
+                RateUs().showRateUsDialog(
+                  fallbackUrl: mainJson.data?['app']?['app_store_url'] ?? '',
+                );
               },
             ),
           ],
@@ -379,7 +381,9 @@ class AdhubDialogs {
                       mainJson.isReviewDialogOpen = false;
                       if (!context.mounted) return;
                       Navigator.pop(context);
-                      RateUs().showRateUsDialog();
+                      RateUs().showRateUsDialog(
+                        fallbackUrl: mainJson.data?['app']?['app_store_url'] ?? '',
+                      );
                     },
                   ),
                 ),

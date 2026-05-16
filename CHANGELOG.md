@@ -1,3 +1,11 @@
+## 0.0.16
+
+* Fix: Implemented Google UMP (User Messaging Platform) consent flow before MobileAds initialization — resolves AdMob "Consent requirement: No CMP" and "Low coverage" policy violations.
+* Fix: ATT (App Tracking Transparency) on iOS now runs before UMP consent and MobileAds init — correct order per Google's guidelines.
+* Chore: Removed duplicate ATT request from the post-init callback; ATT is now handled exclusively in `BaseClass.initAdNetworks`.
+* Fix: OneSignal notification permission is now requested only once — if the user taps "Don't Allow", the prompt will not appear again on subsequent launches.
+* Fix: Tapping "Rate" on Android now opens the Play Store listing directly when the in-app review API is unavailable (debug build, quota exhausted, etc.).
+
 ## 0.0.15
 
 * Fix: App Tracking Transparency (ATT) dialog now reliably appears on the very first launch on iOS.

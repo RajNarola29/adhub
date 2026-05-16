@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -161,13 +159,13 @@ class Adhub extends HookWidget {
                 BaseClass().initAdNetworks(
                   context: context,
                   onInitComplete: () async {
+                    final prefs = await SharedPreferences.getInstance();
                     Timer.periodic(
                       Duration(
                         seconds: mainJson
                             .data?['version_config']?[version]['globalConfig']['rateUsTimer'],
                       ),
                       (timer) async {
-                        final prefs = await SharedPreferences.getInstance();
                         final bool rateUsCompleted =
                             prefs.getBool('rate_us_completed') ?? false;
 
@@ -199,19 +197,6 @@ class Adhub extends HookWidget {
                         }
                       },
                     );
-                    if (Platform.isIOS) {
-                      final trackingStatus = await AppTrackingTransparency
-                          .trackingAuthorizationStatus;
-                      if (trackingStatus ==
-                          TrackingStatus.notDetermined) {
-                        await Future.delayed(
-                          const Duration(milliseconds: 500),
-                        );
-                        await AppTrackingTransparency
-                            .requestTrackingAuthorization();
-                      }
-                    }
-
                     final String oneSignalKey =
                         mainJson.data?['app']?['onesignal_app_id'] ?? "";
 
@@ -219,7 +204,12 @@ class Adhub extends HookWidget {
                       OneSignal.initialize(oneSignalKey);
 
                       if (!OneSignal.Notifications.permission) {
-                        await OneSignal.Notifications.requestPermission(true);
+                        final bool alreadyAsked =
+                            prefs.getBool('notification_permission_asked') ?? false;
+                        if (!alreadyAsked) {
+                          await prefs.setBool('notification_permission_asked', true);
+                          await OneSignal.Notifications.requestPermission(false);
+                        }
                       }
                     }
                     if (!context.mounted) return;

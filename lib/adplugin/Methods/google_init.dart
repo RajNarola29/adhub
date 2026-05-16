@@ -9,7 +9,25 @@ class GoogleInit {
   static Future<void> get ready => _completer.future;
 
   void onInit() {
-    // Non-blocking — startup is not delayed.
+    _gatherConsentThenInit();
+  }
+
+  /// Requests UMP consent info, shows form if required, then initializes ads.
+  void _gatherConsentThenInit() {
+    ConsentInformation.instance.requestConsentInfoUpdate(
+      ConsentRequestParameters(),
+      () {
+        // loadAndShowConsentFormIfRequired handles all cases:
+        // shows form when required, skips silently when not needed.
+        ConsentForm.loadAndShowConsentFormIfRequired(
+          (FormError? formError) => _initMobileAds(),
+        );
+      },
+      (FormError error) => _initMobileAds(),
+    );
+  }
+
+  void _initMobileAds() {
     MobileAds.instance.initialize().then((_) {
       if (!_completer.isCompleted) _completer.complete();
     });
