@@ -12,6 +12,10 @@ class GoogleInit {
     _gatherConsentThenInit();
   }
 
+  static void skip() {
+    if (!_completer.isCompleted) _completer.complete();
+  }
+
   /// Requests UMP consent info, shows form if required, then initializes ads.
   void _gatherConsentThenInit() {
     ConsentInformation.instance.requestConsentInfoUpdate(

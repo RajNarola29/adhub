@@ -1,3 +1,10 @@
+## 0.0.17
+
+* Fix: Banner and native ads now load correctly on the home screen.
+* Fix: Several stability improvements and crash fixes.
+* Improvement: All dialogs now support dark and light theme automatically.
+* Docs: Added Google AdMob test IDs for Android and iOS to README.
+
 ## 0.0.16
 
 * Fix: Implemented Google UMP (User Messaging Platform) consent flow before MobileAds initialization — resolves AdMob "Consent requirement: No CMP" and "Low coverage" policy violations.

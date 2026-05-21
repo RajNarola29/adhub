@@ -36,6 +36,34 @@ flutter pub add adhub
 
 ---
 
+## Google AdMob Test IDs
+
+Use these when setting `isTestOn: true` during development.
+
+### Android
+
+| Format | Test ID |
+|---|---|
+| **App ID** | `ca-app-pub-3940256099942544~3347511713` |
+| **Banner** | `ca-app-pub-3940256099942544/6300978111` |
+| **Interstitial** | `ca-app-pub-3940256099942544/1033173712` |
+| **Rewarded** | `ca-app-pub-3940256099942544/5224354917` |
+| **Rewarded Interstitial** | `ca-app-pub-3940256099942544/6978759866` |
+| **Native** | `ca-app-pub-3940256099942544/2247696110` |
+
+### iOS
+
+| Format | Test ID |
+|---|---|
+| **App ID** | `ca-app-pub-3940256099942544~1458002511` |
+| **Banner** | `ca-app-pub-3940256099942544/2934735716` |
+| **Interstitial** | `ca-app-pub-3940256099942544/4411468910` |
+| **Rewarded** | `ca-app-pub-3940256099942544/1712485313` |
+| **Rewarded Interstitial** | `ca-app-pub-3940256099942544/5354046379` |
+| **Native** | `ca-app-pub-3940256099942544/3986624511` |
+
+---
+
 ## Ad Index
 
 When configuring `actions` in your JSON, use the following integer index to select which ad network and format to use:

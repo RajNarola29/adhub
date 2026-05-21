@@ -120,6 +120,7 @@ class Ads {
 
     // Cooldown: fire onComplete if ad hasn't loaded within overrideTimer seconds.
     final int timeout = mainJson.data?['version_config']?[mainJson.version]?['globalConfig']?['overrideTimer'] ?? 30;
+    timer?.cancel();
     timer = Timer.periodic(
       Duration(seconds: timeout),
       (t) {

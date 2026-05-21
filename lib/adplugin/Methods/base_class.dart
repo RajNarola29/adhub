@@ -24,14 +24,28 @@ class BaseClass {
       }
     }
 
-    if (mainJson.data!['version_config'][mainJson.version]['adNetwork']['google'] ?? false) {
+    final bool googleEnabled =
+        mainJson.data!['version_config'][mainJson.version]['adNetwork']['google'] ?? false;
+    final bool appLovinEnabled =
+        mainJson.data!['version_config'][mainJson.version]['adNetwork']['appLovin'] ?? false;
+
+    if (!googleEnabled && !appLovinEnabled) {
+      mainJson.isAdsOn = false;
+    }
+
+    if (googleEnabled) {
       // Non-blocking — UMP consent + MobileAds.initialize run in background.
       GoogleInit().onInit();
+    } else {
+      // Google not enabled — resolve the completer so any await GoogleInit.ready
+      // calls in GoogleBanner/GoogleNative don't hang forever.
+      GoogleInit.skip();
     }
-    if (mainJson.data!['version_config'][mainJson.version]['adNetwork']['appLovin'] ?? false) {
+    if (appLovinEnabled) {
       // Run AppLovin init in background — do NOT await to avoid blocking startup
       AppLovinMAX.initialize(
-        (mainJson.data!['ad_config']['applovin_sdk_key'] != null && mainJson.data!['ad_config']['applovin_sdk_key'] != "")
+        (mainJson.data!['ad_config']['applovin_sdk_key'] != null &&
+                mainJson.data!['ad_config']['applovin_sdk_key'] != "")
             ? mainJson.data!['ad_config']['applovin_sdk_key']
             : "xiAs_Fs3BiExPelVuawzyDTU2Sy4GL2d6KB1c7C1loiv64T5oquTwRRIJbHC3qO0qRI_65NChIkGy3U2i6rWXn",
       );

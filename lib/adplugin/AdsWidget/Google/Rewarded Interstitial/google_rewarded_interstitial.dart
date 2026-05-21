@@ -9,7 +9,7 @@ import '../../../MainJson/main_json.dart';
 import '../../../Methods/google_init.dart';
 
 class GoogleRewardedInterstitial {
-  RewardedInterstitialAd? _rewardeInterstitialdAd;
+  RewardedInterstitialAd? _rewardedInterstitialAd;
 
   void loadAd({
     required BuildContext context,
@@ -28,8 +28,8 @@ class GoogleRewardedInterstitial {
       request: const AdRequest(),
       rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
         onAdLoaded: (ad) {
-          _rewardeInterstitialdAd = ad;
-          _rewardeInterstitialdAd!.fullScreenContentCallback =
+          _rewardedInterstitialAd = ad;
+          _rewardedInterstitialAd!.fullScreenContentCallback =
               FullScreenContentCallback(
                 onAdShowedFullScreenContent: (ad) {},
                 onAdImpression: (ad) {},
@@ -47,7 +47,7 @@ class GoogleRewardedInterstitial {
                 onAdClicked: (ad) {},
               );
           onLoaded();
-          _rewardeInterstitialdAd!.show(
+          _rewardedInterstitialAd!.show(
             onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {
               onComplete();
               ad.dispose();

@@ -6,6 +6,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../../../MainJson/main_json.dart';
+import '../../../Methods/google_init.dart';
 
 class GoogleBanner extends HookWidget {
   const GoogleBanner({super.key});
@@ -19,7 +20,8 @@ class GoogleBanner extends HookWidget {
 
     MainJson mainJson = context.read<MainJson>();
 
-    loadAd() {
+    loadAd() async {
+      await GoogleInit.ready;
       bannerAd.value = BannerAd(
         adUnitId: !mainJson.isTestOn
             ? '${mainJson.data!['ad_config']['admob_banner']}'

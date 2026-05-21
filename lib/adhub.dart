@@ -57,8 +57,9 @@ class Adhub extends HookWidget {
   @override
   Widget build(BuildContext context) {
     MainJson mainJson = context.watch<MainJson>();
+    final rateUsTimerRef = useRef<Timer?>(null);
 
-    late final VoidCallback retryFetch;
+    late VoidCallback retryFetch;
 
     mainFetchingLogic() {
       retryFetch = mainFetchingLogic;
@@ -78,11 +79,13 @@ class Adhub extends HookWidget {
           if (response.statusCode == 200) {
             if (response.data != null) {
               Future.microtask(() async {
-                mainJson.data = response.data;
-                mainJson.version = version;
-                mainJson.isAdsOn = isAdsOn!;
-                mainJson.isTestOn = isTestOn!;
-                mainJson.nativeColor = nativeColor!;
+                mainJson.init(
+                  data: response.data,
+                  version: version,
+                  isAdsOn: isAdsOn!,
+                  isTestOn: isTestOn!,
+                  nativeColor: nativeColor!,
+                );
 
                 final appData = mainJson.data?['app'];
 
@@ -160,10 +163,11 @@ class Adhub extends HookWidget {
                   context: context,
                   onInitComplete: () async {
                     final prefs = await SharedPreferences.getInstance();
-                    Timer.periodic(
+                    rateUsTimerRef.value = Timer.periodic(
                       Duration(
                         seconds: mainJson
-                            .data?['version_config']?[version]['globalConfig']['rateUsTimer'],
+                                .data?['version_config']?[version]?['globalConfig']?['rateUsTimer'] ??
+                            30,
                       ),
                       (timer) async {
                         final bool rateUsCompleted =
@@ -246,11 +250,11 @@ class Adhub extends HookWidget {
     }
 
     useEffect(() {
-      Future.microtask(() {
-        mainFetchingLogic();
-      });
-      return () {};
+      mainFetchingLogic();
+      return () {
+        rateUsTimerRef.value?.cancel();
+      };
     }, []);
-    return Scaffold(body: child);
+    return child;
   }
 }

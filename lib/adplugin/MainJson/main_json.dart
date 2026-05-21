@@ -60,4 +60,20 @@ class MainJson extends ChangeNotifier {
     _hasInteractedWithRateUs = value;
     notifyListeners();
   }
+
+  void init({
+    required Map data,
+    required String version,
+    required bool isAdsOn,
+    required bool isTestOn,
+    required Color nativeColor,
+  }) {
+    _data = data;
+    dataNotifier.value = data;
+    _version = version;
+    _isAdsOn = isAdsOn;
+    _isTestOn = isTestOn;
+    _nativeColor = nativeColor;
+    notifyListeners();
+  }
 }
