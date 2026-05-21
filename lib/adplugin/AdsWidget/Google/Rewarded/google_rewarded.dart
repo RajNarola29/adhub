@@ -39,7 +39,7 @@ class GoogleRewarded {
               ad.dispose();
             },
             onAdDismissedFullScreenContent: (ad) {
-              if (mainJson.data!['version_config'][mainJson.version]['globalConfig']['rewardOverRide']) {
+              if (mainJson.data!['version_config'][mainJson.version]['globalConfig']['rewardOverRide'] ?? false) {
                 onComplete();
               }
               context.read<AdLoaderProvider>().isAdLoading = false;

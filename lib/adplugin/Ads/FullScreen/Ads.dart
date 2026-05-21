@@ -7,7 +7,7 @@ import '../../AdLoader/ad_loader_provider.dart';
 import '../../AdsWidget/AppLovin/Interstitial/applovin_interstitial.dart';
 import '../../AdsWidget/AppLovin/Rewarded/applovin_rewarded.dart';
 import '../../AdsWidget/Google/Interstitial/google_interstitial.dart';
-import '../../AdsWidget/Google/Rewarded Interstitial/google_rewarded_interstitial.dart';
+import '../../AdsWidget/Google/rewarded_interstitial/google_rewarded_interstitial.dart';
 import '../../AdsWidget/Google/Rewarded/google_rewarded.dart';
 import '../../MainJson/main_json.dart';
 
@@ -117,9 +117,23 @@ class Ads {
     final int index = key != null ? (routeIndex[key] ?? 0) : currentAdIndex;
     final int adTypeIndex = localClick[index];
     final int listMax = localClick.length - 1;
+    final v = mainJson.data?['version_config']?[mainJson.version];
+
+    if (_isInterstitialType(adTypeIndex) &&
+        (v?['globalConfig']?['globalInterstitial'] ?? true) == false) {
+      loaderProvider.isAdLoading = false;
+      onComplete();
+      return;
+    }
+    if (_isRewardedType(adTypeIndex) &&
+        (v?['globalConfig']?['globalRewarded'] ?? true) == false) {
+      loaderProvider.isAdLoading = false;
+      onComplete();
+      return;
+    }
 
     // Cooldown: fire onComplete if ad hasn't loaded within overrideTimer seconds.
-    final int timeout = mainJson.data?['version_config']?[mainJson.version]?['globalConfig']?['overrideTimer'] ?? 30;
+    final int timeout = v?['globalConfig']?['overrideTimer'] ?? 30;
     timer?.cancel();
     timer = Timer.periodic(
       Duration(seconds: timeout),
@@ -201,9 +215,12 @@ class Ads {
 
   // ── Guard helper ──────────────────────────────────────────────────────────
 
+  bool _isInterstitialType(int index) => index == 0 || index == 3;
+  bool _isRewardedType(int index) => index == 1 || index == 2 || index == 4;
+
   bool _blocked(MainJson m, AdLoaderProvider l, VoidCallback onComplete) {
     final v = m.data?['version_config']?[m.version];
-    if (!m.isAdsOn || (v?['globalConfig']?['globalAdFlag'] ?? false) == false) {
+    if (!m.isAdsOn || (v?['globalConfig']?['globalAdFlag'] ?? true) == false) {
       l.isAdLoading = false;
       onComplete();
       return true;
@@ -226,7 +243,7 @@ class Ads {
     final v = mainJson.data?['version_config']?[mainJson.version];
     final screenConfig = v?['screens']?[route];
 
-    if (screenConfig == null || (screenConfig['localAdFlag'] ?? false) == false) {
+    if (screenConfig == null || (screenConfig['localAdFlag'] ?? true) == false) {
       loaderProvider.isAdLoading = false;
       onComplete();
       return;
@@ -255,7 +272,7 @@ class Ads {
     final v = mainJson.data?['version_config']?[mainJson.version];
     final actionConfig = v?['actions']?[actionName];
 
-    if (actionConfig == null || (actionConfig['localAdFlag'] ?? false) == false) {
+    if (actionConfig == null || (actionConfig['localAdFlag'] ?? true) == false) {
       loaderProvider.isAdLoading = false;
       onComplete();
       return;
@@ -286,8 +303,8 @@ class Ads {
     final screenConfig = v?['screens']?[route];
     final actionConfig = screenConfig?['actions']?[actionName];
 
-    if (screenConfig == null || (screenConfig['localAdFlag'] ?? false) == false ||
-        actionConfig == null || (actionConfig['localAdFlag'] ?? false) == false) {
+    if (screenConfig == null || (screenConfig['localAdFlag'] ?? true) == false ||
+        actionConfig == null || (actionConfig['localAdFlag'] ?? true) == false) {
       loaderProvider.isAdLoading = false;
       onComplete();
       return;

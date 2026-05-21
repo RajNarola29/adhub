@@ -9,7 +9,9 @@ import '../../../MainJson/main_json.dart';
 import '../../../Methods/google_init.dart';
 
 class GoogleBanner extends HookWidget {
-  const GoogleBanner({super.key});
+  final VoidCallback onFailed;
+
+  const GoogleBanner({required this.onFailed, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,23 +33,18 @@ class GoogleBanner extends HookWidget {
         request: const AdRequest(),
         size: AdSize.banner,
         listener: BannerAdListener(
-          // Called when an ad is successfully received.
           onAdLoaded: (ad) {
-
             isLoading.value = false;
             isFailed.value = false;
           },
           onAdFailedToLoad: (ad, error) {
             isLoading.value = false;
             isFailed.value = true;
-
             ad.dispose();
+            onFailed();
           },
-
           onAdOpened: (Ad ad) {},
-
           onAdClosed: (Ad ad) {},
-
           onAdImpression: (Ad ad) {},
         ),
       );

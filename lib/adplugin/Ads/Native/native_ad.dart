@@ -1,10 +1,9 @@
-// 🐦 Flutter imports:
 import 'package:flutter/material.dart';
-// 📦 Package imports:
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
-// 🌎 Project imports:
+import '../../Ads/HouseAd/house_ad_manager.dart';
+import '../../Ads/HouseAd/house_native_ad.dart';
 import '../../AdsWidget/Google/Native/google_native.dart';
 import '../../MainJson/main_json.dart';
 
@@ -15,10 +14,30 @@ class NativeAd extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    MainJson mainJson = context.read<MainJson>();
     final nativeWidget = useState<Widget>(const SizedBox(height: 0, width: 0));
 
+    showHouseAd() {
+      final v = mainJson.data?['version_config']?[mainJson.version];
+      if ((v?['globalConfig']?['globalAdFlag'] ?? true) == false) {
+        nativeWidget.value = const SizedBox(height: 0, width: 0);
+        return;
+      }
+      final houseAds = mainJson.data?['house_ads'];
+      if (houseAds == null || (houseAds['native_enabled'] ?? true) == false) {
+        nativeWidget.value = const SizedBox(height: 0, width: 0);
+        return;
+      }
+      final apps = houseAds['apps'] as List? ?? [];
+      final ad = HouseAdManager.getNextNative(apps);
+      if (ad == null) {
+        nativeWidget.value = const SizedBox(height: 0, width: 0);
+        return;
+      }
+      nativeWidget.value = HouseNativeAd(ad: ad);
+    }
+
     showAd() {
-      MainJson mainJson = context.read<MainJson>();
       if (!mainJson.isAdsOn) {
         nativeWidget.value = const SizedBox(height: 0, width: 0);
         return;
@@ -27,17 +46,17 @@ class NativeAd extends HookWidget {
       final route = ModalRoute.of(parentContext)?.settings.name;
       final screenConfig = v?['screens']?[route];
 
-      if ((v?['globalConfig']?['globalAdFlag'] ?? false) == false ||
-          (v?['globalConfig']?['globalNative'] ?? false) == false ||
+      if ((v?['globalConfig']?['globalAdFlag'] ?? true) == false ||
+          (v?['globalConfig']?['globalNative'] ?? true) == false ||
           screenConfig == null ||
-          (screenConfig['localAdFlag'] ?? false) == false) {
+          (screenConfig['localAdFlag'] ?? true) == false) {
         nativeWidget.value = const SizedBox(height: 0, width: 0);
         return;
       }
 
       switch (screenConfig['native']) {
         case 0:
-          nativeWidget.value = const GoogleNative();
+          nativeWidget.value = GoogleNative(onFailed: showHouseAd);
           break;
         default:
           nativeWidget.value = const SizedBox(height: 0, width: 0);

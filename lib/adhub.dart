@@ -112,7 +112,9 @@ class Adhub extends HookWidget {
                 if (appData?['is_migrated'] == true) {
                   AdhubDialogs.showMigrationDialog(
                     context,
-                    appData?['migration_url'] ?? "",
+                    appData?['migration_url']?.toString().isNotEmpty == true
+                        ? appData!['migration_url']
+                        : appData?['app_store_url'] ?? "",
                   );
                   return;
                 }

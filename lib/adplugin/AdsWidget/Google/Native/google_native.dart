@@ -9,7 +9,9 @@ import '../../../MainJson/main_json.dart';
 import '../../../Methods/google_init.dart';
 
 class GoogleNative extends HookWidget {
-  const GoogleNative({super.key});
+  final VoidCallback onFailed;
+
+  const GoogleNative({required this.onFailed, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class GoogleNative extends HookWidget {
           },
           onAdFailedToLoad: (ad, error) {
             ad.dispose();
+            onFailed();
           },
           onAdClicked: (ad) {},
           onAdImpression: (ad) {},

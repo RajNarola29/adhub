@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 import '../../../MainJson/main_json.dart';
 
 class ApplovinBanner extends HookWidget {
-  const ApplovinBanner({super.key});
+  final VoidCallback onFailed;
+
+  const ApplovinBanner({required this.onFailed, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +35,7 @@ class ApplovinBanner extends HookWidget {
                 onAdLoadFailedCallback: (adUnitId, error) {
                   isLoaded.value = false;
                   isFailed.value = true;
+                  onFailed();
                 },
                 onAdClickedCallback: (ad) {},
                 onAdExpandedCallback: (ad) {},
