@@ -29,7 +29,9 @@ class HouseBannerAd extends StatelessWidget {
     final double ratingValue =
         double.tryParse('${ad['rating'] ?? '4.5'}') ?? 4.5;
 
-    return GestureDetector(
+    return DefaultTextStyle(
+      style: const TextStyle(inherit: false, decoration: TextDecoration.none),
+      child: GestureDetector(
       onTap: () {
         final url = '${ad['store_url'] ?? ''}';
         if (url.isEmpty) return;
@@ -161,6 +163,7 @@ class HouseBannerAd extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

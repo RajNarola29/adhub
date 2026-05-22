@@ -1,5 +1,11 @@
-## 0.0.17
+## 0.1.1
 
+* Fix: House ad banner and native text styles no longer inherit the host app's theme (shadows, fonts, etc.) — ads now look consistent across all apps.
+
+## 0.1.0
+
+* Feat: House ads system — show your own apps as fallback banner and native ads when real ads fail.
+* Feat: SVG branding (logo + name) in house ad widgets with dark/light mode support.
 * Fix: Banner and native ads now load correctly on the home screen.
 * Fix: Several stability improvements and crash fixes.
 * Improvement: All dialogs now support dark and light theme automatically.

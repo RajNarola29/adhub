@@ -40,7 +40,9 @@ class HouseNativeAd extends StatelessWidget {
     final String logoAsset = isDark ? 'assets/logos/light-logo.svg' : 'assets/logos/dark-logo.svg';
     final String nameAsset = isDark ? 'assets/logos/light-name.svg' : 'assets/logos/dark-name.svg';
 
-    return GestureDetector(
+    return DefaultTextStyle(
+      style: const TextStyle(inherit: false, decoration: TextDecoration.none),
+      child: GestureDetector(
       onTap: _open,
       child: Container(
         margin: const EdgeInsets.all(10),
@@ -125,6 +127,7 @@ class HouseNativeAd extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
