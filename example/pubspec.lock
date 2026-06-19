@@ -7,23 +7,23 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.17"
+    version: "0.1.1"
   app_tracking_transparency:
     dependency: transitive
     description:
       name: app_tracking_transparency
-      sha256: "1f71f4d8402552fbf8b191d4edab301f233c1af794878b7bc56c708470ffd74c"
+      sha256: "3a52669c0645ffd7efe9a460047616de3e3f2128338f9ec7cdb681628d36238e"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.6+1"
+    version: "2.0.7"
   applovin_max:
     dependency: transitive
     description:
       name: applovin_max
-      sha256: e99e6a3a504d81a9a9d99e8303ca167a294351fb80ed35469e3e2ec432a69676
+      sha256: d179b33535589ce72dbc30c1fd0a3f0d249f5d1d547645b7837f8456c6a1df93
       url: "https://pub.dev"
     source: hosted
-    version: "4.6.3"
+    version: "4.6.4"
   args:
     dependency: transitive
     description:
@@ -195,10 +195,10 @@ packages:
     dependency: transitive
     description:
       name: google_mobile_ads
-      sha256: "50549f6c945d7a445d53c04f34d025b1a1723fbd02719de9e67de432e2597f40"
+      sha256: "6029f6c48bc9b6b47767ddbb4847683048a2f006d418c871bd93c5eb6a8e5c3c"
       url: "https://pub.dev"
     source: hosted
-    version: "8.0.0"
+    version: "9.0.0"
   hooks:
     dependency: transitive
     description:
@@ -339,10 +339,10 @@ packages:
     dependency: transitive
     description:
       name: onesignal_flutter
-      sha256: "8b96061c197b01d79d96b34632d277bfe55a314565265a6e021ab34954976517"
+      sha256: "70c22b209eab569a8b163b04b0e26072d8f1fb04062219686d8a2c44c0e67f78"
       url: "https://pub.dev"
     source: hosted
-    version: "5.5.4"
+    version: "5.6.2"
   package_info_plus:
     dependency: transitive
     description:

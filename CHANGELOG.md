@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Chore: Upgraded dependencies - `google_mobile_ads` to ^9.0.0, `applovin_max` to ^4.6.4, `app_tracking_transparency` to ^2.0.7, `onesignal_flutter` to ^5.6.2.
+
 ## 0.1.1
 
 * Fix: House ad banner and native text styles no longer inherit the host app's theme (shadows, fonts, etc.) — ads now look consistent across all apps.
