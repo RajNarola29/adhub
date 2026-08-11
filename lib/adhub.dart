@@ -252,7 +252,16 @@ class Adhub extends HookWidget {
                     if (firebaseOptions != null) {
                       final appId = _extractAppIdFromJsonUrl(jsonUrl);
                       if (appId != null) {
-                        await AdhubFcm.initialize(firebaseOptions!, appId);
+                        // Non-blocking - mirrors GoogleInit/AppLovin above so
+                        // Firebase init, the permission prompt, and topic
+                        // subscribes don't delay showing the app.
+                        unawaited(
+                          AdhubFcm.initialize(firebaseOptions!, appId).catchError((
+                            Object e,
+                          ) {
+                            debugPrint('Adhub: AdhubFcm.initialize failed: $e');
+                          }),
+                        );
                       } else {
                         debugPrint(
                           'Adhub: firebaseOptions was provided but no app id '
@@ -266,8 +275,13 @@ class Adhub extends HookWidget {
                     // Runs regardless of which SDK is configured - checks
                     // the shared OS notification permission and, if still
                     // denied, re-prompts (or falls back to a settings
-                    // deep-link) at most once every 3 days.
-                    await AdhubFcm.maybeReRequestPermission();
+                    // deep-link) at most once every 3 days. Non-blocking for
+                    // the same reason as AdhubFcm.initialize() above.
+                    unawaited(
+                      AdhubFcm.maybeReRequestPermission().catchError((Object e) {
+                        debugPrint('Adhub: maybeReRequestPermission failed: $e');
+                      }),
+                    );
                     if (!context.mounted) return;
 
                     if (isSoftUpdatePending) {

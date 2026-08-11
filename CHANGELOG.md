@@ -1,3 +1,7 @@
+## 0.2.2
+
+* Fix: `AdhubFcm.initialize()` and `maybeReRequestPermission()` no longer block app startup - Firebase init, the notification permission prompt, and topic subscriptions used to be awaited before the app's content was shown, adding 1.5-2s to every launch. They now run non-blocking in the background, mirroring the existing `GoogleInit`/`AppLovinMAX` pattern.
+
 ## 0.2.1
 
 * Fix: `AdhubFcm.enableNotifications()` and `AdhubNotifications.enableNotifications()` now actually check and request OS notification permission instead of assuming it was already granted - if the OS already refused before, shows adhub's existing settings-deeplink dialog. Both now return `Future<bool>` (previously `Future<void>`) reporting whether the user actually ended up opted in.
