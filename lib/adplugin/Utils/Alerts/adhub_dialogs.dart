@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -359,6 +360,106 @@ class AdhubDialogs {
                         if (!context.mounted) return;
                         Navigator.pop(context);
                         RateUs().showRateUsDialog(fallbackUrl: mainJson.data?['app']?['app_store_url'] ?? '');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  /// Shown when the OS will no longer display its own native permission
+  /// popup (permanently denied) - the only way back in at that point is the
+  /// device's own app-settings screen, so "Enable" deep-links there instead
+  /// of trying to re-trigger a prompt that won't appear.
+  static Future<void> showNotificationPermissionDialog() async {
+    final context = NavigationService.navigatorKey.currentContext;
+    if (context == null) return;
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text(packageInfo.appName),
+          content: const Text(
+            "Turn on notifications to hear about new rewards and updates.",
+          ),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text("Not Now"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            CupertinoDialogAction(
+              child: const Text("Enable"),
+              onPressed: () {
+                Navigator.pop(context);
+                openAppSettings();
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+          final titleColor = isDark ? Colors.white : Colors.black87;
+          final contentColor = isDark ? Colors.white70 : Colors.black54;
+          final secondaryColor = isDark ? Colors.grey[400]! : Colors.grey[700]!;
+          return AlertDialog(
+            backgroundColor: bgColor,
+            surfaceTintColor: Colors.transparent,
+            elevation: 10,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            icon: const Icon(Icons.notifications_active_rounded, size: 60, color: Colors.amber),
+            title: Text(
+              "Stay in the loop",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: titleColor),
+            ),
+            content: Text(
+              "Turn on notifications to hear about new rewards and updates.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: contentColor, fontSize: 16),
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actionsPadding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+            actions: <Widget>[
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: secondaryColor,
+                        minimumSize: const Size(0, 50),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      ),
+                      child: const Text("NOT NOW", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(0, 50),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      ),
+                      child: const Text("ENABLE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        openAppSettings();
                       },
                     ),
                   ),

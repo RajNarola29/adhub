@@ -10,8 +10,13 @@ import '../../../Methods/google_init.dart';
 
 class GoogleNative extends HookWidget {
   final VoidCallback onFailed;
+  final EdgeInsets margin;
 
-  const GoogleNative({required this.onFailed, super.key});
+  const GoogleNative({
+    required this.onFailed,
+    this.margin = EdgeInsets.zero,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,22 +52,54 @@ class GoogleNative extends HookWidget {
         ),
         request: const AdRequest(),
       );
-      nativeAd.value!.load();
+      // Assigned before `load()` so `nativeWidget.value` is never null by
+      // the time `onAdLoaded` can fire and flip `nativeAdIsLoaded`.
       nativeWidget.value = AdWidget(ad: nativeAd.value!);
+      nativeAd.value!.load();
     }
 
     useEffect(() {
       loadAd();
-      return () {};
+      return () {
+        nativeAd.value?.dispose();
+      };
     }, []);
     return nativeAdIsLoaded.value
         ? Container(
-            margin: const EdgeInsets.all(10.0),
+            margin: margin,
             constraints: const BoxConstraints(minHeight: 270, maxHeight: 402),
-            decoration: BoxDecoration(color: mainJson.nativeColor),
+            decoration: BoxDecoration(
+              color: mainJson.nativeColor,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: mainJson.nativeBorderColor, width: 1),
+            ),
+            clipBehavior: Clip.antiAlias,
             alignment: Alignment.center,
             width: double.infinity,
-            child: nativeWidget.value,
+            child: Stack(
+              children: [
+                nativeWidget.value!,
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    color: const Color(0xFFFFCC00),
+                    child: const Text(
+                      'Ad',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           )
         : const SizedBox.shrink();
   }

@@ -1,3 +1,12 @@
+## 0.2.0
+
+* Feat: Firebase Cloud Messaging (FCM) support via a new `firebaseOptions` param on `Adhub` - FCM is now the primary push channel, with OneSignal kept installed as a fallback for apps not yet configured with Firebase. Handles topic subscription (broadcast + per-app), foreground/background message display, notification tap deep-linking, and a re-ask flow for denied OS notification permission.
+* Feat: Native ad styling is now centralized - `Adhub`/`MainJson` expose `nativeBorderColor` and `nativeMargin` (alongside the existing `nativeColor`), and `GoogleNative` now renders a rounded border plus a unified "Ad" badge overlay for both Android and iOS.
+* Feat: `NativeAd` accepts an optional per-call `margin` override on top of the app-wide `MainJson.nativeMargin` default.
+* Breaking: `AdhubNotifications.isOptedIn`, `enableNotifications()`, and `disableNotifications()` are now `Future`-based (previously synchronous) since they may need to check/update FCM topic subscription state.
+* Fix: `GoogleNative`'s loaded native ad is now disposed on widget unmount - previously leaked native ad memory every time a native ad slot recycled (e.g. inside a `ListView.builder`).
+* Chore: Added `firebase_core`, `firebase_messaging`, `flutter_local_notifications`, and `permission_handler` dependencies; upgraded `onesignal_flutter` to ^5.6.7.
+
 ## 0.1.3
 
 * Chore: Upgraded dependencies - `dio` to ^5.10.0, `package_info_plus` to ^10.2.0, `onesignal_flutter` to ^5.6.4.

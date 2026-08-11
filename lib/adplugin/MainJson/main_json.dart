@@ -6,6 +6,8 @@ class MainJson extends ChangeNotifier {
   bool _isAdsOn = true;
   bool _isTestOn = false;
   Color _nativeColor = Colors.white;
+  Color _nativeBorderColor = Colors.white;
+  EdgeInsets _nativeMargin = EdgeInsets.zero;
   bool _isReviewDialogOpen = false;
   bool _hasInteractedWithRateUs = false;
 
@@ -20,6 +22,10 @@ class MainJson extends ChangeNotifier {
   bool get isTestOn => _isTestOn;
 
   Color get nativeColor => _nativeColor;
+
+  Color get nativeBorderColor => _nativeBorderColor;
+
+  EdgeInsets get nativeMargin => _nativeMargin;
 
   bool get isReviewDialogOpen => _isReviewDialogOpen;
 
@@ -51,6 +57,16 @@ class MainJson extends ChangeNotifier {
     notifyListeners();
   }
 
+  set nativeBorderColor(Color value) {
+    _nativeBorderColor = value;
+    notifyListeners();
+  }
+
+  set nativeMargin(EdgeInsets value) {
+    _nativeMargin = value;
+    notifyListeners();
+  }
+
   set isReviewDialogOpen(bool value) {
     _isReviewDialogOpen = value;
     notifyListeners();
@@ -67,6 +83,8 @@ class MainJson extends ChangeNotifier {
     required bool isAdsOn,
     required bool isTestOn,
     required Color nativeColor,
+    required Color nativeBorderColor,
+    required EdgeInsets nativeMargin,
   }) {
     _data = data;
     dataNotifier.value = data;
@@ -74,6 +92,8 @@ class MainJson extends ChangeNotifier {
     _isAdsOn = isAdsOn;
     _isTestOn = isTestOn;
     _nativeColor = nativeColor;
+    _nativeBorderColor = nativeBorderColor;
+    _nativeMargin = nativeMargin;
     notifyListeners();
   }
 }

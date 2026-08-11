@@ -18,7 +18,7 @@
 | 🎁 **Rewarded Interstitial** | Google AdMob |
 | 🖼️ **Native Ads** | Google AdMob |
 | 🔄 **AdLoader Overlay** | Full-screen loading spinner while ads load |
-| 🔔 **OneSignal Push** | Auto-initialised from JSON |
+| 🔔 **Push Notifications** | FCM (primary) + OneSignal (fallback) - see [Push Notifications](#push-notifications-fcm) below |
 | ⭐ **In-App Review** | Timer-based rate-us prompt |
 | 🛡️ **Maintenance Mode** | Server-side kill-switch — blocks app with a custom message |
 | 🌐 **Network Resilience** | 10-second timeout + retry dialog |
@@ -33,6 +33,27 @@ To add this package to your Flutter project, run:
 ```bash
 flutter pub add adhub
 ```
+
+---
+
+## Push Notifications (FCM)
+
+FCM is the primary push channel; OneSignal stays installed and is only used as a fallback for apps that don't pass `firebaseOptions` yet. To wire up FCM for a consuming app:
+
+1. Run `flutterfire configure` in the app to generate `lib/firebase_options.dart`.
+2. Pass the generated options into `Adhub`:
+   ```dart
+   Adhub(
+     firebaseOptions: DefaultFirebaseOptions.currentPlatform,
+     jsonUrl: jsonUrl,
+     // ...
+   )
+   ```
+3. **Android** - target SDK 33+ requires the `POST_NOTIFICATIONS` runtime permission; `permission_handler` (a transitive dependency of this package) handles the request, but the permission must still be declared in the app's `AndroidManifest.xml`.
+4. **iOS** - enable the "Push Notifications" capability and the "Background Modes > Remote notifications" background mode in Xcode, and upload an APNs auth key (or certificate) to the Firebase console for the app.
+5. **iOS image-rich pushes (optional)** - to have notification images render, add a Notification Service Extension target to the app that downloads and attaches the image; FCM alone won't do this on iOS.
+
+Use `AdhubNotifications.enableNotifications()` / `.disableNotifications()` / `.isOptedIn` (all `Future`-based) to build a notification toggle in your app's settings screen - they transparently keep both FCM topic subscriptions and OneSignal opt-in state in sync.
 
 ---
 

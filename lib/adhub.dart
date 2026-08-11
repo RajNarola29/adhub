@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -10,9 +11,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'adplugin/MainJson/main_json.dart';
 import 'adplugin/Methods/base_class.dart';
+import 'adplugin/Methods/fcm_manager.dart';
 import 'adplugin/Utils/Alerts/adhub_dialogs.dart';
 
 export 'adplugin/Methods/notification_manager.dart';
+export 'adplugin/Methods/fcm_manager.dart';
+
+/// `jsonUrl` always points at `.../apps/{id}.json` (see r2-generator.ts in
+/// the panel) - reused here as the FCM per-app topic id instead of adding a
+/// separate config value every consuming app would have to pass in.
+String? _extractAppIdFromJsonUrl(String jsonUrl) {
+  return RegExp(r'/(\d+)\.json$').firstMatch(jsonUrl)?.group(1);
+}
 
 bool _isVersionOlder(String current, String remote) {
   try {
@@ -42,6 +52,9 @@ class Adhub extends HookWidget {
   final bool? isAdsOn;
   final bool? isTestOn;
   final Color? nativeColor;
+  final Color? nativeBorderColor;
+  final EdgeInsets? nativeMargin;
+  final FirebaseOptions? firebaseOptions;
 
   const Adhub({
     required this.child,
@@ -51,6 +64,9 @@ class Adhub extends HookWidget {
     this.isAdsOn = true,
     this.isTestOn = false,
     this.nativeColor = Colors.white,
+    this.nativeBorderColor = Colors.white,
+    this.nativeMargin = EdgeInsets.zero,
+    this.firebaseOptions,
     super.key,
   });
 
@@ -85,6 +101,8 @@ class Adhub extends HookWidget {
                   isAdsOn: isAdsOn!,
                   isTestOn: isTestOn!,
                   nativeColor: nativeColor!,
+                  nativeBorderColor: nativeBorderColor!,
+                  nativeMargin: nativeMargin!,
                 );
 
                 final appData = mainJson.data?['app'];
@@ -186,7 +204,7 @@ class Adhub extends HookWidget {
                         if (notNowStr != null) {
                           final notNowTime = DateTime.parse(notNowStr);
                           if (DateTime.now().difference(notNowTime).inDays <
-                              7) {
+                              3) {
                             timer.cancel();
                             return;
                           }
@@ -209,15 +227,47 @@ class Adhub extends HookWidget {
                     if (oneSignalKey.isNotEmpty) {
                       OneSignal.initialize(oneSignalKey);
 
-                      if (!OneSignal.Notifications.permission) {
+                      // The OS notification permission is a single shared
+                      // permission - only one SDK should ever actually
+                      // request it. FCM's requestPermission() is the richer,
+                      // primary path (see the matching request in
+                      // AdhubFcm.initialize()), so OneSignal only requests it
+                      // itself as a fallback for apps that don't have
+                      // Firebase configured yet.
+                      if (firebaseOptions == null &&
+                          !OneSignal.Notifications.permission) {
                         final bool alreadyAsked =
-                            prefs.getBool('notification_permission_asked') ?? false;
+                            prefs.getBool(adhubNotificationPermissionAskedKey) ??
+                                false;
                         if (!alreadyAsked) {
-                          await prefs.setBool('notification_permission_asked', true);
+                          await prefs.setBool(
+                            adhubNotificationPermissionAskedKey,
+                            true,
+                          );
                           await OneSignal.Notifications.requestPermission(false);
                         }
                       }
                     }
+
+                    if (firebaseOptions != null) {
+                      final appId = _extractAppIdFromJsonUrl(jsonUrl);
+                      if (appId != null) {
+                        await AdhubFcm.initialize(firebaseOptions!, appId);
+                      } else {
+                        debugPrint(
+                          'Adhub: firebaseOptions was provided but no app id '
+                          'could be extracted from jsonUrl ("$jsonUrl") - '
+                          'expected it to end in "/<digits>.json". FCM will '
+                          'not be initialized.',
+                        );
+                      }
+                    }
+
+                    // Runs regardless of which SDK is configured - checks
+                    // the shared OS notification permission and, if still
+                    // denied, re-prompts (or falls back to a settings
+                    // deep-link) at most once every 3 days.
+                    await AdhubFcm.maybeReRequestPermission();
                     if (!context.mounted) return;
 
                     if (isSoftUpdatePending) {

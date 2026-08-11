@@ -10,7 +10,11 @@ import '../../MainJson/main_json.dart';
 class NativeAd extends HookWidget {
   final BuildContext parentContext;
 
-  const NativeAd({required this.parentContext, super.key});
+  /// Overrides the global [MainJson.nativeMargin] set via [Adhub] for this
+  /// specific ad slot. Leave null to use the app-wide default.
+  final EdgeInsets? margin;
+
+  const NativeAd({required this.parentContext, this.margin, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +60,10 @@ class NativeAd extends HookWidget {
 
       switch (screenConfig['native']) {
         case 0:
-          nativeWidget.value = GoogleNative(onFailed: showHouseAd);
+          nativeWidget.value = GoogleNative(
+            onFailed: showHouseAd,
+            margin: margin ?? mainJson.nativeMargin,
+          );
           break;
         default:
           nativeWidget.value = const SizedBox(height: 0, width: 0);
