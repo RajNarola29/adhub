@@ -273,12 +273,49 @@ class AdhubFcm {
   /// Enables push notifications for the end user. No-op if `initialize()`
   /// hasn't run yet (e.g. this app has no `firebaseOptions` configured) -
   /// there's no topic to (re)subscribe to in that case.
-  static Future<void> enableNotifications() async {
+  ///
+  /// Unlike `initialize()`, this is triggered by an explicit user action
+  /// (e.g. a Settings toggle), so it always requests the OS permission if
+  /// it isn't already granted, rather than relying on the one-time
+  /// first-launch ask. Returns whether the user actually ended up opted
+  /// in, so callers can reflect the real result instead of assuming the
+  /// toggle succeeded.
+  static Future<bool> enableNotifications() async {
     final String? appId = _appId;
-    if (appId == null) return;
+    if (appId == null) return false;
+
+    NotificationSettings settings =
+        await FirebaseMessaging.instance.getNotificationSettings();
+    bool granted =
+        settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional;
+
+    if (!granted) {
+      settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      granted =
+          settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+    }
+
+    if (!granted) {
+      // The OS already refused once, so requestPermission() above won't
+      // have shown any UI (mainly Android) - fall back to adhub's own
+      // dialog, which deep-links to the device's app-settings screen.
+      final PermissionStatus status = await Permission.notification.status;
+      if (status.isPermanentlyDenied || status.isRestricted) {
+        await AdhubDialogs.showNotificationPermissionDialog();
+      }
+      return false;
+    }
+
     await _ensureApnsTokenReady();
     await FirebaseMessaging.instance.subscribeToTopic(adhubFcmBroadcastTopic);
     await FirebaseMessaging.instance.subscribeToTopic(_adhubFcmAppTopic(appId));
+    return true;
   }
 
   /// Disables push notifications for the end user. No-op if `initialize()`

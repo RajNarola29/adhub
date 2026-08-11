@@ -1,3 +1,7 @@
+## 0.2.1
+
+* Fix: `AdhubFcm.enableNotifications()` and `AdhubNotifications.enableNotifications()` now actually check and request OS notification permission instead of assuming it was already granted - if the OS already refused before, shows adhub's existing settings-deeplink dialog. Both now return `Future<bool>` (previously `Future<void>`) reporting whether the user actually ended up opted in.
+
 ## 0.2.0
 
 * Feat: Firebase Cloud Messaging (FCM) support via a new `firebaseOptions` param on `Adhub` - FCM is now the primary push channel, with OneSignal kept installed as a fallback for apps not yet configured with Firebase. Handles topic subscription (broadcast + per-app), foreground/background message display, notification tap deep-linking, and a re-ask flow for denied OS notification permission.

@@ -8,9 +8,16 @@ class AdhubNotifications {
   /// intentionally never removed, only unused for sending after the FCM
   /// cutover), so a toggle that only touched one would leave the user still
   /// (or no longer) subscribed on the other.
-  static Future<void> enableNotifications() async {
+  ///
+  /// Returns whether the user actually ended up opted in (mirrors
+  /// `AdhubFcm.enableNotifications()`), so a caller like a Settings toggle
+  /// can reflect the real OS permission result instead of assuming success.
+  static Future<bool> enableNotifications() async {
     OneSignal.User.pushSubscription.optIn();
-    await AdhubFcm.enableNotifications();
+    if (AdhubFcm.isInitialized) {
+      return AdhubFcm.enableNotifications();
+    }
+    return true;
   }
 
   /// Disables push notifications for the end user, across both OneSignal and
