@@ -17,7 +17,18 @@ class ApplovinBanner extends HookWidget {
 
     MainJson mainJson = context.read<MainJson>();
 
-    final adUnitId = '${mainJson.data!['ad_config']['applovin_banner']}';
+    final String? adUnitId = mainJson.data!['ad_config']['applovin_banner'];
+
+    useEffect(() {
+      if (adUnitId == null || adUnitId.isEmpty) {
+        onFailed();
+      }
+      return null;
+    }, [adUnitId]);
+
+    if (adUnitId == null || adUnitId.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return SizedBox(
       width: double.infinity,

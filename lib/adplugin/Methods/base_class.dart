@@ -25,9 +25,13 @@ class BaseClass {
     }
 
     final bool googleEnabled =
-        mainJson.data!['version_config'][mainJson.version]['adNetwork']['google'] ?? false;
+        mainJson.data!['version_config'][mainJson
+            .version]['adNetwork']['google'] ??
+        false;
     final bool appLovinEnabled =
-        mainJson.data!['version_config'][mainJson.version]['adNetwork']['appLovin'] ?? false;
+        mainJson.data!['version_config'][mainJson
+            .version]['adNetwork']['appLovin'] ??
+        false;
 
     if (!googleEnabled && !appLovinEnabled) {
       mainJson.isAdsOn = false;
@@ -42,6 +46,20 @@ class BaseClass {
       GoogleInit.skip();
     }
     if (appLovinEnabled) {
+      // Test-device registration must happen before initialize() so pilot
+      // devices get marked "test" (no real spend/impressions) while everyone
+      // else still gets live production ads from the same ad unit IDs.
+      if (mainJson.isTestOn) {
+        AppLovinMAX.setVerboseLogging(true);
+        final rawTestDeviceIds =
+            mainJson.data!['ad_config']['applovin_test_device_ids'];
+        if (rawTestDeviceIds is List && rawTestDeviceIds.isNotEmpty) {
+          AppLovinMAX.setTestDeviceAdvertisingIds(
+            rawTestDeviceIds.map((id) => id.toString()).toList(),
+          );
+        }
+      }
+
       // Run AppLovin init in background — do NOT await to avoid blocking startup
       AppLovinMAX.initialize(
         (mainJson.data!['ad_config']['applovin_sdk_key'] != null &&

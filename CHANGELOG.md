@@ -1,3 +1,8 @@
+## 0.2.3
+
+* Fix: AppLovin interstitial/rewarded/banner loaders no longer crash when `applovin_fullscreen`/`applovin_reward`/`applovin_banner` is missing from an app's remote config - they now fail gracefully via `onFailed()` instead of force-unwrapping a null ad unit ID into the native SDK.
+* Feat: AppLovin test-device support - when `Adhub(isTestOn: true)`, `AppLovinMAX.setTestDeviceAdvertisingIds()` is now called (from a new `ad_config.applovin_test_device_ids` list, if present) before `AppLovinMAX.initialize()`, plus verbose logging is enabled. Lets pilot devices receive real production ad units flagged as test traffic (no spend impact) while everyone else still gets live ads - mirrors the existing `isTestOn` swap already used for Google's ad units.
+
 ## 0.2.2
 
 * Fix: `AdhubFcm.initialize()` and `maybeReRequestPermission()` no longer block app startup - Firebase init, the notification permission prompt, and topic subscriptions used to be awaited before the app's content was shown, adding 1.5-2s to every launch. They now run non-blocking in the background, mirroring the existing `GoogleInit`/`AppLovinMAX` pattern.

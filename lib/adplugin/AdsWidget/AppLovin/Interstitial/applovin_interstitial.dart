@@ -13,17 +13,19 @@ class ApplovinInterstitial {
   }) {
     MainJson mainJson = context.read<MainJson>();
 
+    final String? adUnitId = mainJson.data!['ad_config']['applovin_fullscreen'];
+    if (adUnitId == null || adUnitId.isEmpty) {
+      onFailed();
+      return;
+    }
+
     AppLovinMAX.setInterstitialListener(
       InterstitialListener(
         onAdLoadedCallback: (ad) async {
-          bool isReady = (await AppLovinMAX.isInterstitialReady(
-            mainJson.data!['ad_config']['applovin_fullscreen'],
-          ))!;
+          bool isReady = (await AppLovinMAX.isInterstitialReady(adUnitId))!;
           if (isReady) {
             onLoaded();
-            AppLovinMAX.showInterstitial(
-              mainJson.data!['ad_config']['applovin_fullscreen'],
-            );
+            AppLovinMAX.showInterstitial(adUnitId);
           }
         },
         onAdLoadFailedCallback: (adUnitId, error) {
@@ -38,8 +40,6 @@ class ApplovinInterstitial {
       ),
     );
 
-    AppLovinMAX.loadInterstitial(
-      mainJson.data!['ad_config']['applovin_fullscreen'],
-    );
+    AppLovinMAX.loadInterstitial(adUnitId);
   }
 }

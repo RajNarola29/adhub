@@ -13,17 +13,19 @@ class ApplovinRewarded {
   }) {
     MainJson mainJson = context.read<MainJson>();
 
+    final String? adUnitId = mainJson.data!['ad_config']['applovin_reward'];
+    if (adUnitId == null || adUnitId.isEmpty) {
+      onFailed();
+      return;
+    }
+
     AppLovinMAX.setRewardedAdListener(
       RewardedAdListener(
         onAdLoadedCallback: (ad) async {
-          bool isReady = (await AppLovinMAX.isRewardedAdReady(
-            mainJson.data!['ad_config']['applovin_reward'],
-          ))!;
+          bool isReady = (await AppLovinMAX.isRewardedAdReady(adUnitId))!;
           if (isReady) {
             onLoaded();
-            AppLovinMAX.showRewardedAd(
-              mainJson.data!['ad_config']['applovin_reward'],
-            );
+            AppLovinMAX.showRewardedAd(adUnitId);
           }
         },
         onAdLoadFailedCallback: (adUnitId, error) {
@@ -39,8 +41,6 @@ class ApplovinRewarded {
       ),
     );
 
-    AppLovinMAX.loadRewardedAd(
-      mainJson.data!['ad_config']['applovin_reward'],
-    );
+    AppLovinMAX.loadRewardedAd(adUnitId);
   }
 }
