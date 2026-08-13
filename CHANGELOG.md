@@ -1,7 +1,6 @@
 ## 0.2.3
 
 * Fix: AppLovin interstitial/rewarded/banner loaders no longer crash when `applovin_fullscreen`/`applovin_reward`/`applovin_banner` is missing from an app's remote config - they now fail gracefully via `onFailed()` instead of force-unwrapping a null ad unit ID into the native SDK.
-* Feat: AppLovin test-device support - when `Adhub(isTestOn: true)`, `AppLovinMAX.setTestDeviceAdvertisingIds()` is now called (from a new `ad_config.applovin_test_device_ids` list, if present) before `AppLovinMAX.initialize()`, plus verbose logging is enabled. Lets pilot devices receive real production ad units flagged as test traffic (no spend impact) while everyone else still gets live ads - mirrors the existing `isTestOn` swap already used for Google's ad units.
 * Feat: AppLovin Native ad support - new `ApplovinNative` widget (`ad_config.applovin_native`), wired into the `NativeAd` dispatcher as `screenConfig['native'] == 1`, alongside the existing Google (`0`) option. Matches `GoogleNative`'s visual styling (`MainJson.nativeColor`/`nativeBorderColor`/`nativeMargin`, rounded border, "Ad" badge) so native ads look identical regardless of which network served them. Falls back to the House Ad system on load failure, same as every other AppLovin/Google ad widget.
 
 ## 0.2.2
