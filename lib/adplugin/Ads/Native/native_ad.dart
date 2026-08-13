@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../Ads/HouseAd/house_ad_manager.dart';
 import '../../Ads/HouseAd/house_native_ad.dart';
+import '../../AdsWidget/AppLovin/Native/applovin_native.dart';
 import '../../AdsWidget/Google/Native/google_native.dart';
 import '../../MainJson/main_json.dart';
 
@@ -61,6 +62,12 @@ class NativeAd extends HookWidget {
       switch (screenConfig['native']) {
         case 0:
           nativeWidget.value = GoogleNative(
+            onFailed: showHouseAd,
+            margin: margin ?? mainJson.nativeMargin,
+          );
+          break;
+        case 1:
+          nativeWidget.value = ApplovinNative(
             onFailed: showHouseAd,
             margin: margin ?? mainJson.nativeMargin,
           );
