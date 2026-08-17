@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
-import 'package:applovin_max/applovin_max.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../MainJson/main_json.dart';
+import 'applovin_init.dart';
 import 'google_init.dart';
 
 class BaseClass {
@@ -46,13 +46,17 @@ class BaseClass {
       GoogleInit.skip();
     }
     if (appLovinEnabled) {
-      // Run AppLovin init in background — do NOT await to avoid blocking startup
-      AppLovinMAX.initialize(
+      // Non-blocking - AppLovinMAX.initialize() runs in background.
+      AppLovinInit.init(
         (mainJson.data!['ad_config']['applovin_sdk_key'] != null &&
                 mainJson.data!['ad_config']['applovin_sdk_key'] != "")
             ? mainJson.data!['ad_config']['applovin_sdk_key']
             : "xiAs_Fs3BiExPelVuawzyDTU2Sy4GL2d6KB1c7C1loiv64T5oquTwRRIJbHC3qO0qRI_65NChIkGy3U2i6rWXn",
       );
+    } else {
+      // AppLovin not enabled - resolve the completer so any await
+      // AppLovinInit.ready calls in the AppLovin loaders don't hang forever.
+      AppLovinInit.skip();
     }
 
     Future.delayed(const Duration(milliseconds: 100), () {

@@ -34,6 +34,13 @@ flutter:
     - assets/logos/dark-name.svg
     - assets/logos/light-logo.svg
     - assets/logos/light-name.svg
+  plugin:
+    platforms:
+      android:
+        package: com.adhub.adhub
+        pluginClass: AdhubPlugin
+      ios:
+        pluginClass: AdhubPlugin
 
 dev_dependencies:
   flutter_test:

@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../MainJson/main_json.dart';
+import '../../../Methods/applovin_init.dart';
 
 class ApplovinInterstitial {
-  void loadAd({
+  Future<void> loadAd({
     required BuildContext context,
     required Function() onLoaded,
     required Function() onComplete,
     required Function() onFailed,
-  }) {
+  }) async {
+    // Wait for AppLovinMAX.initialize() to complete before loading.
+    // Allows splash screen ads to work with non-blocking init.
+    await AppLovinInit.ready;
     MainJson mainJson = context.read<MainJson>();
 
     final String? adUnitId = mainJson.data!['ad_config']['applovin_fullscreen'];

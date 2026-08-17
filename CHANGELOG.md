@@ -2,6 +2,9 @@
 
 * Fix: AppLovin interstitial/rewarded/banner loaders no longer crash when `applovin_fullscreen`/`applovin_reward`/`applovin_banner` is missing from an app's remote config - they now fail gracefully via `onFailed()` instead of force-unwrapping a null ad unit ID into the native SDK.
 * Feat: AppLovin Native ad support - new `ApplovinNative` widget (`ad_config.applovin_native`), wired into the `NativeAd` dispatcher as `screenConfig['native'] == 1`, alongside the existing Google (`0`) option. Matches `GoogleNative`'s visual styling (`MainJson.nativeColor`/`nativeBorderColor`/`nativeMargin`, rounded border, "Ad" badge) so native ads look identical regardless of which network served them. Falls back to the House Ad system on load failure, same as every other AppLovin/Google ad widget.
+* Fix: AppLovin banner/native ad views no longer mount before `AppLovinMAX.initialize()` completes - new `AppLovinInit` (mirroring `GoogleInit`'s `ready` Completer) is now awaited by all 4 AppLovin loaders, fixing an "Attempted to load ad before SDK initialization" failure.
+* Fix: `ApplovinBanner` rendered at zero height until its ad loaded, but `MaxAdView` (a platform view) only starts loading once it has real layout constraints - it could never load. Now renders at full banner height as soon as the SDK is ready.
+* Chore: adhub is now a real Flutter plugin (was pure-Dart) - added `android/build.gradle.kts` (declares AppLovin/Meta/Unity AdMob mediation adapters + `play-services-ads`), `android/src/main/AndroidManifest.xml`, `android/src/main/kotlin/com/adhub/adhub/AdhubPlugin.kt`, `ios/adhub.podspec` (declares `GoogleMobileAdsMediationAppLovin`/`Facebook`/`Unity` pods, iOS 15.0+), `ios/Classes/AdhubPlugin.swift`, and registered both platforms under `flutter.plugin.platforms` in `pubspec.yaml`. Required so consuming apps' AdMob mediation can actually route to AppLovin/Meta/Unity as bidding/waterfall sources.
 
 ## 0.2.2
 
