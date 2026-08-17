@@ -1,3 +1,7 @@
+## 0.2.4
+
+* Fix: `android/build.gradle.kts`'s `kotlinOptions { jvmTarget = ... }` block used the deprecated Kotlin Gradle Plugin DSL, which newer Kotlin/AGP toolchains (as found rolling this out to a consuming app) treat as a hard build error, not just a warning - `flutter build apk` failed entirely with "'var jvmTarget: String' is deprecated". Replaced with the modern `kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }` DSL.
+
 ## 0.2.3
 
 * Fix: AppLovin interstitial/rewarded/banner loaders no longer crash when `applovin_fullscreen`/`applovin_reward`/`applovin_banner` is missing from an app's remote config - they now fail gracefully via `onFailed()` instead of force-unwrapping a null ad unit ID into the native SDK.
