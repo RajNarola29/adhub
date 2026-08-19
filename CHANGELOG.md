@@ -1,3 +1,8 @@
+## 0.2.5
+
+* Fix: `HouseNativeAd` (the self-promo fallback shown when a Google/AppLovin native ad fails to load) now matches `GoogleNative`/`ApplovinNative` styling - uses `margin ?? MainJson.nativeMargin` (previously a hardcoded `EdgeInsets.all(10)`, ignoring both the app-wide default and any per-slot override) and `MainJson.nativeColor`/`nativeBorderColor` at radius 6 (previously its own theme-brightness-derived colors at radius 12). Intentionally still excludes the "Ad" badge and the 270-402 height constraint used by the other two, since its own icon+title+stars+description+button layout doesn't fit that.
+* Fix: `HouseNativeAd`'s title/description text and logo asset could render as white-on-white in a dark-themed app - their light/dark choice was driven by `Theme.of(context).brightness` (the app's ambient theme) instead of the card's actual background color (`MainJson.nativeColor`, which defaults to white independent of app theme). Now derived via `ThemeData.estimateBrightnessForColor(MainJson.nativeColor)` so text always contrasts against the real background.
+
 ## 0.2.4
 
 * Fix: `android/build.gradle.kts`'s `kotlinOptions { jvmTarget = ... }` block used the deprecated Kotlin Gradle Plugin DSL, which newer Kotlin/AGP toolchains (as found rolling this out to a consuming app) treat as a hard build error, not just a warning - `flutter build apk` failed entirely with "'var jvmTarget: String' is deprecated". Replaced with the modern `kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }` DSL.

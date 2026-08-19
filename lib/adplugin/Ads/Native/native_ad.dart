@@ -39,7 +39,7 @@ class NativeAd extends HookWidget {
         nativeWidget.value = const SizedBox(height: 0, width: 0);
         return;
       }
-      nativeWidget.value = HouseNativeAd(ad: ad);
+      nativeWidget.value = HouseNativeAd(ad: ad, margin: margin ?? mainJson.nativeMargin);
     }
 
     showAd() {

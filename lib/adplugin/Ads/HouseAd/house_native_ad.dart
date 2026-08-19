@@ -2,14 +2,17 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../MainJson/main_json.dart';
 import 'house_ad_stars.dart';
 
 class HouseNativeAd extends StatelessWidget {
   final Map ad;
+  final EdgeInsets margin;
 
-  const HouseNativeAd({required this.ad, super.key});
+  const HouseNativeAd({required this.ad, this.margin = EdgeInsets.zero, super.key});
 
   void _open() {
     final url = '${ad['store_url'] ?? ''}';
@@ -21,11 +24,10 @@ class HouseNativeAd extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final mainJson = context.read<MainJson>();
+    final isDark = ThemeData.estimateBrightnessForColor(mainJson.nativeColor) == Brightness.dark;
     final titleColor = isDark ? Colors.white : Colors.black87;
     final descColor = isDark ? Colors.white70 : Colors.black.withValues(alpha: 0.7);
-    final borderColor = isDark ? Colors.white12 : Colors.black12;
     final isIpad = MediaQuery.of(context).size.shortestSide > 600;
 
     final double iconSize = isIpad ? 130 : 90;
@@ -45,12 +47,13 @@ class HouseNativeAd extends StatelessWidget {
       child: GestureDetector(
       onTap: _open,
       child: Container(
-        margin: const EdgeInsets.all(10),
+        margin: margin,
         decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: borderColor),
+          color: mainJson.nativeColor,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: mainJson.nativeBorderColor, width: 1),
         ),
+        clipBehavior: Clip.antiAlias,
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -131,3 +134,4 @@ class HouseNativeAd extends StatelessWidget {
     );
   }
 }
+
