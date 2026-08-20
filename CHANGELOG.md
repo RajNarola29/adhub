@@ -1,3 +1,7 @@
+## 0.2.6
+
+* Fix: Android notification tray icon now uses `@drawable/ic_stat_notify_default` instead of `@mipmap/ic_launcher`. Android strips all color from the tray icon and reads only the alpha channel, so a full-color launcher icon rendered as a solid white blob on stock/near-stock Android (confirmed on Motorola) or, on some OEM skins like Samsung One UI, silently fell back to showing the full-color app icon instead - neither is correct. Every consuming app must now provide its own `ic_stat_notify_default` drawable (white silhouette, transparent background, at `drawable-{m,h,xh,xxh,xxxh}dpi`) and a matching `com.google.firebase.messaging.default_notification_icon` meta-data entry in its own `AndroidManifest.xml` - mirrors the convention OneSignal itself used (`ic_stat_onesignal_default`).
+
 ## 0.2.5
 
 * Fix: `HouseNativeAd` (the self-promo fallback shown when a Google/AppLovin native ad fails to load) now matches `GoogleNative`/`ApplovinNative` styling - uses `margin ?? MainJson.nativeMargin` (previously a hardcoded `EdgeInsets.all(10)`, ignoring both the app-wide default and any per-slot override) and `MainJson.nativeColor`/`nativeBorderColor` at radius 6 (previously its own theme-brightness-derived colors at radius 12). Intentionally still excludes the "Ad" badge and the 270-402 height constraint used by the other two, since its own icon+title+stars+description+button layout doesn't fit that.

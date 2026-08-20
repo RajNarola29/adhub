@@ -169,7 +169,17 @@ class AdhubFcm {
   }
 
   static Future<void> _initLocalNotifications() async {
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    // Must be a white silhouette on a transparent background at
+    // drawable-{m,h,xh,xxh,xxxh}dpi (24/36/48/72/96px) - Android strips all
+    // color from the notification tray icon and only reads the alpha
+    // channel, so a full-color launcher icon renders as a solid white blob
+    // (or, on some OEM skins like Samsung One UI, falls back to showing the
+    // full-color app icon instead). Every app using adhub must provide its
+    // own `ic_stat_notify_default` drawable at this name/size set - same
+    // convention OneSignal used (`ic_stat_onesignal_default`).
+    const androidInit = AndroidInitializationSettings(
+      '@drawable/ic_stat_notify_default',
+    );
     const iosInit = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
