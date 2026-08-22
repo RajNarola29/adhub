@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'adhub'
-  s.version          = '0.2.3'
+  s.version          = '0.2.7'
   s.summary          = 'A Flutter package that simplifies ad integration with a unified API for banner, interstitial, and rewarded ads.'
   s.description      = <<-DESC
 A Flutter package that simplifies ad integration with a unified API for banner, interstitial, and rewarded ads.
