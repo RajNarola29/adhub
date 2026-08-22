@@ -3,6 +3,7 @@
 * Chore: Bumped Android toolchain (AGP 9.3.1, Gradle 9.7.1, Kotlin 2.4.10, `compileSdk` 37, Java 21) and AppLovin/Unity mediation adapters to latest. Consuming apps now need `compileSdk >= 37` and JDK 21.
 * Fix: `ios/adhub.podspec`'s version was stuck at `0.2.3` for three releases, out of sync with `pubspec.yaml`. Now kept in sync.
 * Fix: consuming apps on Flutter 3.47+/Xcode 26+ may hit iOS build failures unrelated to any dependency version - deployment target below 15.0, dynamic `use_frameworks!` conflicting with AppLovin/Meta/Unity's static xcframeworks, OneSignal's SPM+CocoaPods double-embed, and Xcode 26's stricter explicit-module header checks against Google Mobile Ads. See commit `ffb89d9` for the exact fixes.
+* Fix: `android/build.gradle.kts` applied the Kotlin Gradle Plugin via the legacy `id("kotlin-android")` alias, which Flutter now warns "will cause build failures in future versions of Flutter." Switched to the fully-qualified `id("org.jetbrains.kotlin.android")`.
 
 ## 0.2.6
 
